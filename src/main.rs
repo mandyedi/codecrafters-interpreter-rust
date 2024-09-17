@@ -54,6 +54,15 @@ fn tokenize(input: &str) -> i32 {
                     println!("EQUAL = null");
                 }
             }
+            '!' => {
+                let mut peekable = chars.clone().peekable();
+                if peekable.next() == Some('=') {
+                    println!("BANG_EQUAL != null");
+                    chars.next();
+                } else {
+                    println!("BANG ! null");
+                }
+            }
             _ => {
                 eprintln!("[line 1] Error: Unexpected character: {}", char);
                 result = 65;
