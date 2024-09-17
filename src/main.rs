@@ -30,13 +30,18 @@ fn main() {
     }
 }
 
+#[allow(unused_variables)]
 fn tokenize(input: &str) -> i32 {
     let mut result = 0;
+    let mut line_number: i32 = 1;
     let mut chars = input.chars();
     while let Some(char) = chars.next() {
         match char {
-            ' ' | '\r' | '\t' | '\n' => {
+            ' ' | '\r' | '\t' => {
                 continue;
+            }
+            '\n' => {
+                line_number += 1;
             }
             '(' => println!("LEFT_PAREN ( null"),
             ')' => println!("RIGHT_PAREN ) null"),
@@ -87,13 +92,18 @@ fn tokenize(input: &str) -> i32 {
             '/' => {
                 let mut peekable = chars.clone().peekable();
                 if peekable.next() == Some('/') {
-                    break;
+                    while let Some(next_char) = chars.next() {
+                        if next_char == '\n' {
+                            break;
+                        }
+                    }
+                    line_number += 1;
                 } else {
                     println!("SLASH / null");
                 }
             }
             _ => {
-                    eprintln!("[line 1] Error: Unexpected character: {}", char);
+                eprintln!("[line {}] Error: Unexpected character: {}", line_number, char);
                 result = 65;
             }
         }
