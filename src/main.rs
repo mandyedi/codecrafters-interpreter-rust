@@ -32,7 +32,8 @@ fn main() {
 
 fn tokenize(input: &str) -> i32 {
     let mut result = 0;
-    for char in input.chars() {
+    let mut chars = input.chars();
+    while let Some(char) = chars.next() {
         match char {
             '(' => println!("LEFT_PAREN ( null"),
             ')' => println!("RIGHT_PAREN ) null"),
@@ -44,6 +45,15 @@ fn tokenize(input: &str) -> i32 {
             '+' => println!("PLUS + null"),
             '*' => println!("STAR * null"),
             ';' => println!("SEMICOLON ; null"),
+            '=' => {
+                let mut peekable = chars.clone().peekable();
+                if peekable.next() == Some('=') {
+                    println!("EQUAL_EQUAL == null");
+                    chars.next();
+                } else {
+                    println!("EQUAL = null");
+                }
+            }
             _ => {
                 eprintln!("[line 1] Error: Unexpected character: {}", char);
                 result = 65;
