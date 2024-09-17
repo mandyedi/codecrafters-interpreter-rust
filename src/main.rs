@@ -102,6 +102,24 @@ fn tokenize(input: &str) -> i32 {
                     println!("SLASH / null");
                 }
             }
+            '"' => {
+                let mut string = String::new();
+                let mut terminated = false;
+                while let Some(next_char) = chars.next() {
+                    if next_char == '"' {
+                        terminated = true;
+                        break;
+                    }
+                    string.push(next_char);
+                }
+
+                if terminated {
+                    println!("STRING \"{0}\" {0}", string);
+                } else {
+                    eprintln!("[line {}] Error: Unterminated string.", line_number);
+                    result = 65;
+                }
+            }
             _ => {
                 eprintln!("[line {}] Error: Unexpected character: {}", line_number, char);
                 result = 65;
