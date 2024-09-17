@@ -35,6 +35,9 @@ fn tokenize(input: &str) -> i32 {
     let mut chars = input.chars();
     while let Some(char) = chars.next() {
         match char {
+            ' ' => {
+                continue;
+            }
             '(' => println!("LEFT_PAREN ( null"),
             ')' => println!("RIGHT_PAREN ) null"),
             '{' => println!("LEFT_BRACE {{ null"),
@@ -81,8 +84,16 @@ fn tokenize(input: &str) -> i32 {
                     println!("GREATER > null");
                 }
             }
+            '/' => {
+                let mut peekable = chars.clone().peekable();
+                if peekable.next() == Some('/') {
+                    break;
+                } else {
+                    println!("SLASH / null");
+                }
+            }
             _ => {
-                eprintln!("[line 1] Error: Unexpected character: {}", char);
+                    eprintln!("[line 1] Error: Unexpected character: {}", char);
                 result = 65;
             }
         }
