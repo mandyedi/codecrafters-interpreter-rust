@@ -35,7 +35,7 @@ fn tokenize(input: &str) -> i32 {
     let mut chars = input.chars();
     while let Some(char) = chars.next() {
         match char {
-            ' ' => {
+            ' ' | '\r' | '\t' | '\n' => {
                 continue;
             }
             '(' => println!("LEFT_PAREN ( null"),
