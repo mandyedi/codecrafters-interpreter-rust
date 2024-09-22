@@ -1,6 +1,5 @@
 use std::fmt::Display;
 
-#[allow(dead_code)]
 pub enum TokenType {
     // Single-character tokens
     LeftParen, RightParen, LeftBrace, RightBrace,
@@ -13,7 +12,7 @@ pub enum TokenType {
     Greater, GreaterEqual,
 
     // Literals
-    String, Number, Identifier,
+    String,
 
     // Keywords
 
@@ -44,8 +43,6 @@ impl TokenType {
             TokenType::Greater => "GREATER",
             TokenType::GreaterEqual => "GREATER_EQUAL",
             TokenType::String => "STRING",
-            TokenType::Number => "NUMBER",
-            TokenType::Identifier => "IDENTIFIER",
             TokenType::EOF => "EOF",
         }
     }
@@ -57,9 +54,9 @@ impl Display for TokenType {
     }
 }
 
-#[allow(dead_code)]
 pub enum LiteralType {
     String(String),
+    #[allow(dead_code)]
     Number(f64),
 }
 
@@ -72,11 +69,11 @@ impl Display for LiteralType {
     }
 }
 
-#[allow(dead_code)]
 pub struct Token {
     token_type: TokenType,
     lexeme: String,
     literal: Option<LiteralType>,
+    #[allow(dead_code)]
     line: usize,
 }
 
