@@ -1,5 +1,6 @@
 use std::fmt::Display;
 
+#[derive(Clone)]
 pub enum TokenType {
     // Single-character tokens
     LeftParen, RightParen, LeftBrace, RightBrace,
@@ -15,6 +16,8 @@ pub enum TokenType {
     String, Number, Identifier,
 
     // Keywords
+    And, Class, Else, False, Fun, For, If, Nil, Or,
+    Print, Return, Super, This, True, Var, While,
 
     // End of file
     EOF
@@ -45,6 +48,22 @@ impl TokenType {
             TokenType::String => "STRING",
             TokenType::Number => "NUMBER",
             TokenType::Identifier => "IDENTIFIER",
+            TokenType::And => "AND",
+            TokenType::Class => "CLASS",
+            TokenType::Else => "ELSE",
+            TokenType::False => "FALSE",
+            TokenType::Fun => "FUN",
+            TokenType::For => "FOR",
+            TokenType::If => "IF",
+            TokenType::Nil => "NIL",
+            TokenType::Or => "OR",
+            TokenType::Print => "PRINT",
+            TokenType::Return => "RETURN",
+            TokenType::Super => "SUPER",
+            TokenType::This => "THIS",
+            TokenType::True => "TRUE",
+            TokenType::Var => "VAR",
+            TokenType::While => "WHILE",
             TokenType::EOF => "EOF",
         }
     }
@@ -56,6 +75,7 @@ impl Display for TokenType {
     }
 }
 
+#[derive(Clone)]
 pub enum LiteralType {
     String(String),
     Number(f64),
@@ -70,6 +90,7 @@ impl Display for LiteralType {
     }
 }
 
+#[derive(Clone)]
 pub struct Token {
     token_type: TokenType,
     lexeme: String,

@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::token::{Token, TokenType};
 
 pub struct Scanner {
@@ -6,6 +8,7 @@ pub struct Scanner {
     start: usize,
     current: usize,
     line: usize,
+    keywords: HashMap<&'static str, TokenType>,
 }
 
 impl Scanner {
@@ -16,6 +19,24 @@ impl Scanner {
             start: 0,
             current: 0,
             line: 1,
+            keywords: HashMap::from([
+                ("and", TokenType::And),
+                ("class", TokenType::Class),
+                ("else", TokenType::Else),
+                ("false", TokenType::False),
+                ("for", TokenType::For),
+                ("fun", TokenType::Fun),
+                ("if", TokenType::If),
+                ("nil", TokenType::Nil),
+                ("or", TokenType::Or),
+                ("print", TokenType::Print),
+                ("return", TokenType::Return),
+                ("super", TokenType::Super),
+                ("this", TokenType::This),
+                ("true", TokenType::True),
+                ("var", TokenType::Var),
+                ("while", TokenType::While),
+            ])
         }
     }
 
@@ -191,6 +212,12 @@ impl Scanner {
             self.advance();
         }
 
-        self.add_token(TokenType::Identifier, None);
+        let value = &self.source[self.start..self.current];
+
+        match self.keywords.get(&value) {
+            Some(token_type) => { self.add_token(token_type.clone(), None); }
+            None => { self.add_token(TokenType::Identifier, None); }
+
+        }
     }
 }
