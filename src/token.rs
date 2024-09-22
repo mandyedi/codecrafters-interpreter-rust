@@ -12,7 +12,7 @@ pub enum TokenType {
     Greater, GreaterEqual,
 
     // Literals
-    String,
+    String, Number,
 
     // Keywords
 
@@ -43,6 +43,7 @@ impl TokenType {
             TokenType::Greater => "GREATER",
             TokenType::GreaterEqual => "GREATER_EQUAL",
             TokenType::String => "STRING",
+            TokenType::Number => "NUMBER",
             TokenType::EOF => "EOF",
         }
     }
@@ -56,7 +57,6 @@ impl Display for TokenType {
 
 pub enum LiteralType {
     String(String),
-    #[allow(dead_code)]
     Number(f64),
 }
 
@@ -92,13 +92,29 @@ impl Token {
             line,
         }
     }
+
+    pub fn new_number(token_type: TokenType, lexeme: String, literal: Option<f64>, line: usize) -> Self {
+        
+        let literal = match literal {
+            Some(literal) => Some(LiteralType::Number(literal)),
+            _ => None,
+        };
+        
+        Self {
+            token_type,
+            lexeme,
+            literal,
+            line,
+        }
+    }
 }
 
 impl Display for Token {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{} {} {}", self.token_type, self.lexeme, 
             match &self.literal {
-                Some(literal) => format!("{}", literal),
+                Some(LiteralType::String(literal)) => format!("{}", literal),
+                Some(LiteralType::Number(literal)) => format!("{:?}", literal),
                 None => "null".to_owned(),
             }
         )

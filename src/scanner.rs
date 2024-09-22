@@ -74,8 +74,12 @@ impl Scanner {
             '\n' => { self.line += 1 }
             '"' => { self.string(had_error);  }
             _ => {
-                *had_error = true;
-                eprintln!("[line {}] Error: Unexpected character: {}", self.line, c);
+                if self.is_digit(c) {
+                    self.number();
+                } else {
+                    *had_error = true;
+                    eprintln!("[line {}] Error: Unexpected character: {}", self.line, c);
+                }
             },
         }
     }
@@ -89,6 +93,11 @@ impl Scanner {
     fn add_token(&mut self, token_type: TokenType, literal: Option<String>) {
         let text: String = self.source[self.start..self.current].to_string();
         self.tokens.push(Token::new(token_type, text, literal, self.line));
+    }
+
+    fn add_token_number(&mut self, token_type: TokenType, literal: Option<f64>) {
+        let text: String = self.source[self.start..self.current].to_string();
+        self.tokens.push(Token::new_number(token_type, text, literal, self.line));
     }
 
     fn is_at_end(&self) -> bool {
@@ -117,6 +126,14 @@ impl Scanner {
         return self.source.chars().nth(self.current).unwrap_or('\0');
     }
 
+    fn peek_next(&self) -> char {
+        if self.current + 1 >= self.source.len() {
+            return '\0';
+        }
+
+        return self.source.chars().nth(self.current + 1).unwrap_or('\0');
+    }
+
     fn string(&mut self, had_error: &mut bool) {
         while self.peek() != '"' && !self.is_at_end() {
             if self.peek() == '\n' {
@@ -136,6 +153,27 @@ impl Scanner {
 
         let value = self.source[(self.start + 1)..(self.current - 1)].to_string();
         self.add_token(TokenType::String, Some(value));
+    }
+
+    fn is_digit(&self, c: char) -> bool {
+        return c >= '0' && c <= '9';
+    }
+
+    fn number(&mut self) {
+        while self.is_digit(self.peek()) {
+            self.advance();
+        }
+
+        if self.peek() == '.' && self.is_digit(self.peek_next()) {
+            self.advance();
+
+            while self.is_digit(self.peek()) {
+                self.advance();
+            }
+        }
+
+        let value = self.source[self.start..self.current].to_string().parse::<f64>().unwrap();
+        self.add_token_number(TokenType::Number, Some(value));
     }
     
 }
