@@ -12,7 +12,7 @@ pub enum TokenType {
     Greater, GreaterEqual,
 
     // Literals
-    String, Number,
+    String, Number, Identifier,
 
     // Keywords
 
@@ -44,6 +44,7 @@ impl TokenType {
             TokenType::GreaterEqual => "GREATER_EQUAL",
             TokenType::String => "STRING",
             TokenType::Number => "NUMBER",
+            TokenType::Identifier => "IDENTIFIER",
             TokenType::EOF => "EOF",
         }
     }
