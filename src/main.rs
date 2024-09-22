@@ -7,7 +7,6 @@ use std::io::{self, Write};
 use std::process::exit;
 
 use scanner::Scanner;
-// use token::Token;
 
 struct Lox {
 }
@@ -23,9 +22,6 @@ impl Lox {
                     writeln!(io::stderr(), "Failed to read file {}", filename).unwrap();
                     String::new()
                 });
-
-                // let result = tokenize(&file_contents);
-                // exit(result);
 
                 let mut scanner = Scanner::new(file_contents);
                 let mut had_error = false;
