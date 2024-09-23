@@ -1,5 +1,6 @@
 mod token;
 mod scanner;
+mod parser;
 
 use std::env;
 use std::fs;
@@ -7,6 +8,7 @@ use std::io::{self, Write};
 use std::process::exit;
 
 use scanner::Scanner;
+use parser::Parser;
 
 struct Lox {
 }
@@ -29,6 +31,24 @@ impl Lox {
                 for token in scanner.tokens {
                     println!("{}", token);
                 }
+
+                if had_error {
+                    exit(65);
+                }
+            }
+            "parse" => {
+                let file_contents = fs::read_to_string(filename).unwrap_or_else(|_| {
+                    writeln!(io::stderr(), "Failed to read file {}", filename).unwrap();
+                    String::new()
+                });
+
+                let mut scanner = Scanner::new(file_contents);
+                let mut had_error = false;
+                scanner.scan_tokens(&mut had_error);
+
+                let tokens = scanner.tokens.into_boxed_slice();
+                let mut parser = Parser::new(tokens);
+                parser.parse();
 
                 if had_error {
                     exit(65);
