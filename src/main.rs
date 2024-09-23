@@ -25,8 +25,8 @@ impl Lox {
 
                 let mut scanner = Scanner::new(file_contents);
                 let mut had_error = false;
-                let tokens = scanner.scan_tokens(&mut had_error);
-                for token in tokens {
+                scanner.scan_tokens(&mut had_error);
+                for token in scanner.tokens {
                     println!("{}", token);
                 }
 

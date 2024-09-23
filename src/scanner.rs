@@ -4,7 +4,7 @@ use crate::token::{Token, TokenType};
 
 pub struct Scanner {
     source: String,
-    tokens: Vec<Token>,
+    pub tokens: Vec<Token>,
     start: usize,
     current: usize,
     line: usize,
@@ -43,14 +43,13 @@ impl Scanner {
     // TODO: is it ok to return &Vec<Token>?
     // One solution could be to transfer ownership of the tokens vector to the caller:
     // std::mem::take(&mut self.tokens)
-    pub fn scan_tokens(&mut self, had_error: & mut bool) -> &Vec<Token> {
+    pub fn scan_tokens(&mut self, had_error: &mut bool) {
         while !self.is_at_end() {
             self.start = self.current;
             self.scan_token(had_error);
         }
 
         self.tokens.push(Token::new(TokenType::EOF, "".to_owned(), None, self.line));
-        return &self.tokens;
     }
 
     fn scan_token(&mut self, had_error: &mut bool) {
