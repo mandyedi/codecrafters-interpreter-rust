@@ -16,7 +16,11 @@ impl expression::Visitor for AstPrinter {
     type Output = String;
 
     fn visit_literal(&mut self, literal: &Literal) -> String {
-        literal.value.to_string()
+        if literal.value.is_none() {
+            return "nil".to_string();
+        }
+
+        return literal.value.as_ref().unwrap().to_string();
     }
 }
 

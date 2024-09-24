@@ -18,19 +18,23 @@ impl Parser {
 
     fn primary(&mut self) -> Expr {
         if self.match_single(&TokenType::True) {
-            return Expr::Literal(Literal::new(LiteralType::Boolean(true)));
+            return Expr::Literal(Literal::new(Some(LiteralType::Boolean(true))));
         }
         
         if self.match_single(&TokenType::False) {
-            return Expr::Literal(Literal::new(LiteralType::Boolean(false)));
+            return Expr::Literal(Literal::new(Some(LiteralType::Boolean(false))));
         }
 
         if self.match_single(&TokenType::Nil) {
-            return Expr::Literal(Literal::new(LiteralType::String("nil".to_string())));
+            return Expr::Literal(Literal::new(None));
+        }
+
+        if self.match_single(&TokenType::Number) {
+            return Expr::Literal(Literal::new(self.previous().literal.clone()));
         }
 
         // TODO: Implement error handling
-        return Expr::Literal(Literal::new(LiteralType::String("nil".to_string())));
+        return Expr::Literal(Literal::new(None));
     }
 
     fn match_single(&mut self, token_type: &TokenType) -> bool {

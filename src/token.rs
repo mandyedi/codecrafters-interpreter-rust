@@ -86,7 +86,7 @@ impl Display for LiteralType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         match self {
             LiteralType::String(s) => write!(f, "{}", s),
-            LiteralType::Number(n) => write!(f, "{}", n),
+            LiteralType::Number(n) => write!(f, "{:?}", n),
             LiteralType::Boolean(b) => write!(f, "{}", b),
         }
     }
