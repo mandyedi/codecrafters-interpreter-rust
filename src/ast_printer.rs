@@ -1,4 +1,4 @@
-use crate::expression::{self, Expr, Literal, Grouping};
+use crate::expression::*;
 
 pub struct AstPrinter {}
 
@@ -10,9 +10,18 @@ impl AstPrinter {
     pub fn print(&mut self, expr: &Expr) -> String {
         expr.accept(self)
     }
+
+    fn parenthesize(&mut self, name: &str, exprs: &Vec<&Expr>) -> String {
+        let mut result = format!("({}", name);
+        for expr in exprs.iter() {
+            result.push_str(&format!(" {}", expr.accept(self)));
+        }
+        result.push_str(")");
+        return result;
+    }
 }
 
-impl expression::Visitor for AstPrinter {
+impl Visitor for AstPrinter {
     type Output = String;
 
     fn visit_literal(&mut self, literal: &Literal) -> String {
@@ -24,7 +33,11 @@ impl expression::Visitor for AstPrinter {
     }
 
     fn visit_grouping(&mut self, grouping: &Grouping) -> String {
-        return format!("(group {})", grouping.expression.accept(self));
+        return self.parenthesize("group", &vec![&grouping.expression]);
+    }
+
+    fn visit_unary(&mut self, unary: &Unary) -> String {
+        return self.parenthesize(&unary.operator.lexeme, &vec![&unary.right]);
     }
 }
 

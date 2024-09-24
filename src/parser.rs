@@ -1,4 +1,4 @@
-use crate::{expression::{Expr, Literal, Grouping}, token::{Token, TokenType, LiteralType}};
+use crate::{expression::*, token::*};
 pub struct Parser {
     tokens: Box<[Token]>,
     current: usize,
@@ -17,6 +17,16 @@ impl Parser {
     }
 
     fn expression(&mut self) -> Expr {
+        self.unary()
+    }
+
+    fn unary(&mut self) -> Expr {
+        if self.match_many(&vec![TokenType::Bang, TokenType::Minus]) {
+            let operator = self.previous().clone();
+            let right = self.unary();
+            return Expr::Unary(Unary::new(operator, right));
+        }
+        
         self.primary()
     }
 
