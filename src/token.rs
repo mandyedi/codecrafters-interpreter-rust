@@ -1,6 +1,6 @@
-use std::fmt::Display;
+use std::fmt::{self, Display};
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum TokenType {
     // Single-character tokens
     LeftParen, RightParen, LeftBrace, RightBrace,
@@ -79,22 +79,24 @@ impl Display for TokenType {
 pub enum LiteralType {
     String(String),
     Number(f64),
+    Boolean(bool),
 }
 
 impl Display for LiteralType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         match self {
             LiteralType::String(s) => write!(f, "{}", s),
             LiteralType::Number(n) => write!(f, "{}", n),
+            LiteralType::Boolean(b) => write!(f, "Hello boolean: {}", b),
         }
     }
 }
 
 #[derive(Clone)]
 pub struct Token {
-    token_type: TokenType,
+    pub token_type: TokenType,
     lexeme: String,
-    literal: Option<LiteralType>,
+    pub literal: Option<LiteralType>,
     #[allow(dead_code)]
     line: usize,
 }
@@ -132,11 +134,12 @@ impl Token {
 }
 
 impl Display for Token {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{} {} {}", self.token_type, self.lexeme, 
             match &self.literal {
                 Some(LiteralType::String(literal)) => format!("{}", literal),
                 Some(LiteralType::Number(literal)) => format!("{:?}", literal),
+                Some(LiteralType::Boolean(literal)) => format!("{}", literal),
                 None => "null".to_owned(),
             }
         )

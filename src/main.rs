@@ -1,6 +1,8 @@
 mod token;
 mod scanner;
 mod parser;
+mod expression;
+mod ast_printer;
 
 use std::env;
 use std::fs;
@@ -9,6 +11,7 @@ use std::process::exit;
 
 use scanner::Scanner;
 use parser::Parser;
+use ast_printer::AstPrinter;
 
 struct Lox {
 }
@@ -48,11 +51,14 @@ impl Lox {
 
                 let tokens = scanner.tokens.into_boxed_slice();
                 let mut parser = Parser::new(tokens);
-                parser.parse();
+                let expr = parser.parse();
 
                 if had_error {
                     exit(65);
                 }
+
+                let mut ast_printer = AstPrinter::new();
+                ast_printer.print(&expr);
             }
             _ => {
                 writeln!(io::stderr(), "Unknown command: {}", command).unwrap();
