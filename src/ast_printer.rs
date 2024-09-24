@@ -1,4 +1,4 @@
-use crate::expression::{self, Expr, Literal};
+use crate::expression::{self, Expr, Literal, Grouping};
 
 pub struct AstPrinter {}
 
@@ -21,6 +21,10 @@ impl expression::Visitor for AstPrinter {
         }
 
         return literal.value.as_ref().unwrap().to_string();
+    }
+
+    fn visit_grouping(&mut self, grouping: &Grouping) -> String {
+        return format!("(group {})", grouping.expression.accept(self));
     }
 }
 

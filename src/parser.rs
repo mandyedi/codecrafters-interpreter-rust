@@ -1,4 +1,4 @@
-use crate::{expression::{Expr, Literal}, token::{Token, TokenType, LiteralType}};
+use crate::{expression::{Expr, Literal, Grouping}, token::{Token, TokenType, LiteralType}};
 pub struct Parser {
     tokens: Box<[Token]>,
     current: usize,
@@ -13,6 +13,10 @@ impl Parser {
     }
 
     pub fn parse(&mut self) -> Expr {
+        self.expression()
+    }
+
+    fn expression(&mut self) -> Expr {
         self.primary()
     }
 
@@ -32,9 +36,22 @@ impl Parser {
         if self.match_many(&vec![TokenType::Number, TokenType::String]) {
             return Expr::Literal(Literal::new(self.previous().literal.clone()));
         }
+        
+        if self.match_single(&TokenType::LeftParen) {
+            let expr = self.expression();
+            self.consume(&TokenType::RightParen);
+            return Expr::Grouping(Grouping::new(expr));
+        }
 
         // TODO: Implement error handling
         return Expr::Literal(Literal::new(None));
+    }
+
+    fn consume(&mut self, token_type: &TokenType) {
+        // TODO: Implement error handling
+        if !self.check(&token_type) {
+            self.advance();
+        }
     }
 
     fn match_many(&mut self, types: &Vec<TokenType>) -> bool {
