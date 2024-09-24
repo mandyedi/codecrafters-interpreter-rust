@@ -17,7 +17,19 @@ impl Parser {
     }
 
     fn expression(&mut self) -> Expr {
-        self.factor()
+        self.term()
+    }
+
+    fn term(&mut self) -> Expr {
+        let mut expr = self.factor();
+
+        while self.match_many(&vec![TokenType::Minus, TokenType::Plus]) {
+            let operator = self.previous().clone();
+            let right = self.factor();
+
+            expr = Expr::Binary(Binary::new(expr, operator, right));
+        }
+        expr
     }
 
     fn factor(&mut self) -> Expr {
@@ -72,7 +84,7 @@ impl Parser {
 
     fn consume(&mut self, token_type: &TokenType) {
         // TODO: Implement error handling
-        if !self.check(&token_type) {
+        if self.check(&token_type) {
             self.advance();
         }
     }
