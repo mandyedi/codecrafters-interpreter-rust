@@ -87,7 +87,7 @@ impl Display for LiteralType {
         match self {
             LiteralType::String(s) => write!(f, "{}", s),
             LiteralType::Number(n) => write!(f, "{}", n),
-            LiteralType::Boolean(b) => write!(f, "Hello boolean: {}", b),
+            LiteralType::Boolean(b) => write!(f, "{}", b),
         }
     }
 }

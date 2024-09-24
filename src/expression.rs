@@ -1,9 +1,19 @@
 use crate::token::LiteralType;
 
+pub struct Literal {
+    pub value: LiteralType,
+}
+
+impl Literal {
+    pub fn new(value: LiteralType) -> Self {
+        Self {
+            value,
+        }
+    }
+}
+
 pub enum Expr {
-    Literal {
-        value: LiteralType,
-    },
+    Literal(Literal),
 }
 
 impl Expr {
@@ -11,11 +21,14 @@ impl Expr {
         self
     }
 
-    pub fn accept<R>(&self, visitor: &mut impl ExprVisitor<R>) -> R {
-        visitor.visit(self)
+    pub fn accept<T: Visitor>(&self, visitor: &mut T) -> T::Output {
+        return match self {
+            Expr::Literal(literal) => visitor.visit_literal(literal),
+        };
     }
 }
 
-pub trait ExprVisitor<R> {
-    fn visit(&mut self, expr: &Expr) -> R;
+pub trait Visitor {
+    type Output;
+    fn visit_literal(&mut self, expr: &Literal) -> Self::Output;
 }

@@ -1,4 +1,4 @@
-use crate::{expression::Expr, token::{Token, TokenType, LiteralType}};
+use crate::{expression::{Expr, Literal}, token::{Token, TokenType, LiteralType}};
 pub struct Parser {
     tokens: Box<[Token]>,
     current: usize,
@@ -18,19 +18,19 @@ impl Parser {
 
     fn primary(&mut self) -> Expr {
         if self.match_single(&TokenType::True) {
-            return Expr::Literal{ value: LiteralType::Boolean(true) }.wrap();
+            return Expr::Literal(Literal::new(LiteralType::Boolean(true)));
         }
         
         if self.match_single(&TokenType::False) {
-            return Expr::Literal{ value: LiteralType::Boolean(false) }.wrap();
+            return Expr::Literal(Literal::new(LiteralType::Boolean(false)));
         }
 
         if self.match_single(&TokenType::Nil) {
-            return Expr::Literal{ value: LiteralType::String("Nil".to_string()) }.wrap();
+            return Expr::Literal(Literal::new(LiteralType::String("nil".to_string())));
         }
 
         // TODO: Implement error handling
-        return Expr::Literal{ value: LiteralType::String("Nil".to_string()) }.wrap();
+        return Expr::Literal(Literal::new(LiteralType::String("nil".to_string())));
     }
 
     fn match_single(&mut self, token_type: &TokenType) -> bool {

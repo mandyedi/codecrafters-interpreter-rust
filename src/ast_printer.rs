@@ -1,4 +1,4 @@
-use crate::expression::{Expr, ExprVisitor};
+use crate::expression::{self, Expr, Literal};
 
 pub struct AstPrinter {}
 
@@ -12,11 +12,11 @@ impl AstPrinter {
     }
 }
 
-impl ExprVisitor<String> for AstPrinter {
-    fn visit(&mut self, expr: &Expr) -> String {
-        match expr {
-            Expr::Literal{ value } => { value.to_string() }
-            _ => { panic!("Unknown expression type") }
-        }
+impl expression::Visitor for AstPrinter {
+    type Output = String;
+
+    fn visit_literal(&mut self, literal: &Literal) -> String {
+        literal.value.to_string()
     }
 }
+

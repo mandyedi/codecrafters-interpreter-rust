@@ -58,7 +58,7 @@ impl Lox {
                 }
 
                 let mut ast_printer = AstPrinter::new();
-                ast_printer.print(&expr);
+                println!("{}", ast_printer.print(&expr));
             }
             _ => {
                 writeln!(io::stderr(), "Unknown command: {}", command).unwrap();
