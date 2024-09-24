@@ -29,12 +29,22 @@ impl Parser {
             return Expr::Literal(Literal::new(None));
         }
 
-        if self.match_single(&TokenType::Number) {
+        if self.match_many(&vec![TokenType::Number, TokenType::String]) {
             return Expr::Literal(Literal::new(self.previous().literal.clone()));
         }
 
         // TODO: Implement error handling
         return Expr::Literal(Literal::new(None));
+    }
+
+    fn match_many(&mut self, types: &Vec<TokenType>) -> bool {
+        for token_type in types.iter() {
+            if self.check(&token_type) {
+                self.advance();
+                return true;
+            }
+        }
+        false
     }
 
     fn match_single(&mut self, token_type: &TokenType) -> bool {
