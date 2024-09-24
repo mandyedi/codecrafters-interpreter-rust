@@ -39,5 +39,9 @@ impl Visitor for AstPrinter {
     fn visit_unary(&mut self, unary: &Unary) -> String {
         return self.parenthesize(&unary.operator.lexeme, &vec![&unary.right]);
     }
+
+    fn visit_binary(&mut self, binary: &Binary) -> String {
+        return self.parenthesize(&binary.operator.lexeme, &vec![&binary.left, &binary.right]);
+    }
 }
 

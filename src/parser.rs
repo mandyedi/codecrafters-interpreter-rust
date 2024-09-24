@@ -17,7 +17,20 @@ impl Parser {
     }
 
     fn expression(&mut self) -> Expr {
-        self.unary()
+        self.factor()
+    }
+
+    fn factor(&mut self) -> Expr {
+        let mut expr = self.unary();
+
+        while self.match_many(&vec![TokenType::Slash, TokenType::Star]) {
+            let operator = self.previous().clone();
+            let right = self.unary();
+
+            expr = Expr::Binary(Binary::new(expr, operator, right));
+        }
+
+        expr
     }
 
     fn unary(&mut self) -> Expr {
