@@ -17,7 +17,20 @@ impl Parser {
     }
 
     fn expression(&mut self) -> Expr {
-        self.comparison()
+        self.equality()
+    }
+
+    fn equality(&mut self) -> Expr {
+        let mut expr = self.comparison();
+        
+        while self.match_many(&vec![TokenType::BangEqual, TokenType::EqualEqual]) {
+            let operator = self.previous().clone();
+            let right = self.comparison();
+
+            expr = Expr::Binary(Binary::new(expr, operator, right));
+        }
+
+        expr
     }
 
     fn comparison(&mut self) -> Expr {
