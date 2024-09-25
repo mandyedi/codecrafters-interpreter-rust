@@ -1,0 +1,81 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug tokneize 'codecrafters-interpreter'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=codecrafters-interpreter",
+                    "--package=codecrafters-interpreter"
+                ],
+                "filter": {
+                    "name": "codecrafters-interpreter",
+                    "kind": "bin"
+                }
+            },
+            "args": ["tokenize", "${workspaceFolder}/src/test.lox"],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug parse 'codecrafters-interpreter'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=codecrafters-interpreter",
+                    "--package=codecrafters-interpreter"
+                ],
+                "filter": {
+                    "name": "codecrafters-interpreter",
+                    "kind": "bin"
+                }
+            },
+            "args": ["parse", "${workspaceFolder}/src/test.lox"],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug evaluate 'codecrafters-interpreter'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=codecrafters-interpreter",
+                    "--package=codecrafters-interpreter"
+                ],
+                "filter": {
+                    "name": "codecrafters-interpreter",
+                    "kind": "bin"
+                }
+            },
+            "args": ["evaluate", "${workspaceFolder}/src/test.lox"],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'codecrafters-interpreter'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=codecrafters-interpreter",
+                    "--package=codecrafters-interpreter"
+                ],
+                "filter": {
+                    "name": "codecrafters-interpreter",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

@@ -81,6 +81,9 @@ impl Lox {
                     Err(_) => {},
                 }
             }
+            "evaluate" => {
+                println!("Not implemented yet");
+            }
             _ => {
                 writeln!(io::stderr(), "Unknown command: {}", command).unwrap();
                 return;
