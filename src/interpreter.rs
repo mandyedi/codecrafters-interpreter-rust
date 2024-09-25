@@ -77,9 +77,17 @@ impl expression::Visitor for Interpreter {
                 let y: f64 = right.unwrap().to_string().parse::<f64>().unwrap();
                 return Some(LiteralType::Number(x / y));
             }
+            TokenType::Plus => {
+                let x: f64 = left.unwrap().to_string().parse::<f64>().unwrap();
+                let y: f64 = right.unwrap().to_string().parse::<f64>().unwrap();
+                return Some(LiteralType::Number(x + y));
+            }
+            TokenType::Minus => {
+                let x: f64 = left.unwrap().to_string().parse::<f64>().unwrap();
+                let y: f64 = right.unwrap().to_string().parse::<f64>().unwrap();
+                return Some(LiteralType::Number(x - y));
+            }
             _ => return None,
         }
-
-        None
     }
 }
