@@ -10,7 +10,12 @@ impl Interpreter {
     pub fn interpret(&mut self, expression: &expression::Expr) {
         let result = self.evaluate(expression);
         match result {
-            Some(result) => println!("{}", result),
+            Some(result) => {
+                match result {
+                    LiteralType::Number(_) => println!("{}", result.to_string().trim_end_matches(".0")),
+                    _ => println!("{}", result)
+                }
+            }
             None => println!("nil"),
         }
     }
