@@ -97,8 +97,7 @@ pub struct Token {
     pub token_type: TokenType,
     pub lexeme: String,
     pub literal: Option<LiteralType>,
-    #[allow(dead_code)]
-    line: usize,
+    pub line: usize,
 }
 
 impl Token {

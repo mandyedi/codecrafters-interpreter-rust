@@ -1,4 +1,13 @@
-use crate::{expression::*, token::*};
+use crate::{error_token, expression::*, token::*};
+
+pub struct ParseError {}
+
+impl ParseError {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
 pub struct Parser {
     tokens: Box<[Token]>,
     current: usize,
@@ -12,107 +21,109 @@ impl Parser {
         }
     }
 
-    pub fn parse(&mut self) -> Expr {
+    pub fn parse(&mut self) -> Result<Expr, ParseError> {
         self.expression()
     }
 
-    fn expression(&mut self) -> Expr {
+    fn expression(&mut self) -> Result<Expr, ParseError> {
         self.equality()
     }
 
-    fn equality(&mut self) -> Expr {
-        let mut expr = self.comparison();
+    fn equality(&mut self) -> Result<Expr, ParseError> {
+        let mut expr = self.comparison()?;
         
         while self.match_many(&vec![TokenType::BangEqual, TokenType::EqualEqual]) {
             let operator = self.previous().clone();
-            let right = self.comparison();
+            let right = self.comparison()?;
 
             expr = Expr::Binary(Binary::new(expr, operator, right));
         }
 
-        expr
+        return Ok(expr);
     }
 
-    fn comparison(&mut self) -> Expr {
-        let mut expr = self.term();
+    fn comparison(&mut self) -> Result<Expr, ParseError> {
+        let mut expr = self.term()?;
 
         while self.match_many(&vec![TokenType::Greater, TokenType::GreaterEqual, TokenType::Less, TokenType::LessEqual]) {
             let operator = self.previous().clone();
-            let right = self.term();
+            let right = self.term()?;
 
             expr = Expr::Binary(Binary::new(expr, operator, right));
         }
 
-        expr
+        return Ok(expr);
     }
 
-    fn term(&mut self) -> Expr {
-        let mut expr = self.factor();
+    fn term(&mut self) -> Result<Expr, ParseError> {
+        let mut expr = self.factor()?;
 
         while self.match_many(&vec![TokenType::Minus, TokenType::Plus]) {
             let operator = self.previous().clone();
-            let right = self.factor();
+            let right = self.factor()?;
 
             expr = Expr::Binary(Binary::new(expr, operator, right));
         }
-        expr
+        
+        return Ok(expr);
     }
 
-    fn factor(&mut self) -> Expr {
-        let mut expr = self.unary();
+    fn factor(&mut self) -> Result<Expr, ParseError> {
+        let mut expr = self.unary()?;
 
         while self.match_many(&vec![TokenType::Slash, TokenType::Star]) {
             let operator = self.previous().clone();
-            let right = self.unary();
+            let right = self.unary()?;
 
             expr = Expr::Binary(Binary::new(expr, operator, right));
         }
 
-        expr
+        return Ok(expr);
     }
 
-    fn unary(&mut self) -> Expr {
+    fn unary(&mut self) -> Result<Expr, ParseError> {
         if self.match_many(&vec![TokenType::Bang, TokenType::Minus]) {
             let operator = self.previous().clone();
-            let right = self.unary();
-            return Expr::Unary(Unary::new(operator, right));
+            let right = self.unary()?;
+            return Ok(Expr::Unary(Unary::new(operator, right)));
         }
         
         self.primary()
     }
 
-    fn primary(&mut self) -> Expr {
+    fn primary(&mut self) -> Result<Expr, ParseError> {
         if self.match_single(&TokenType::True) {
-            return Expr::Literal(Literal::new(Some(LiteralType::Boolean(true))));
+            return Ok(Expr::Literal(Literal::new(Some(LiteralType::Boolean(true)))));
         }
         
         if self.match_single(&TokenType::False) {
-            return Expr::Literal(Literal::new(Some(LiteralType::Boolean(false))));
+            return Ok(Expr::Literal(Literal::new(Some(LiteralType::Boolean(false)))));
         }
 
         if self.match_single(&TokenType::Nil) {
-            return Expr::Literal(Literal::new(None));
+            return Ok(Expr::Literal(Literal::new(None)));
         }
 
         if self.match_many(&vec![TokenType::Number, TokenType::String]) {
-            return Expr::Literal(Literal::new(self.previous().literal.clone()));
+            return Ok(Expr::Literal(Literal::new(self.previous().literal.clone())));
         }
         
         if self.match_single(&TokenType::LeftParen) {
-            let expr = self.expression();
-            self.consume(&TokenType::RightParen);
-            return Expr::Grouping(Grouping::new(expr));
+            let expr = self.expression()?;
+            self.consume(&TokenType::RightParen, "Expect ')' after expression.")?;
+            return Ok(Expr::Grouping(Grouping::new(expr)));
         }
 
-        // TODO: Implement error handling
-        return Expr::Literal(Literal::new(None));
+        return Err(self.error(self.peek(), "Expect expression.".to_string()));
     }
 
-    fn consume(&mut self, token_type: &TokenType) {
+    fn consume(&mut self, token_type: &TokenType, message: &str) -> Result<&Token, ParseError> {
         // TODO: Implement error handling
         if self.check(&token_type) {
-            self.advance();
+            return Ok(self.advance());
         }
+
+        Err(self.error(self.peek(), message.to_string()))
     }
 
     fn match_many(&mut self, types: &Vec<TokenType>) -> bool {
@@ -159,4 +170,8 @@ impl Parser {
         &self.tokens[self.current - 1]
     }
 
+    fn error(&self, token: &Token, message: String) -> ParseError {
+        error_token(token, message);
+        return ParseError::new();
+    }
 }

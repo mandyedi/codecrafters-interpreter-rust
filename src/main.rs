@@ -12,11 +12,20 @@ use std::process::exit;
 use scanner::Scanner;
 use parser::Parser;
 use ast_printer::AstPrinter;
+use token::TokenType;
 
 static mut HAD_ERROR: bool = false;
 
 pub fn error(line: usize, message: String) {
     report(line, "", message);
+}
+
+pub fn error_token(token: &token::Token, message: String) {
+    if token.token_type == TokenType::EOF {
+        report(token.line, " at end", message);
+    } else {
+        report(token.line, &format!("at '{}'", token.lexeme), message);
+    }
 }
 
 fn report(line: usize, location: &str, message: String) {
@@ -67,7 +76,10 @@ impl Lox {
                 }
 
                 let mut ast_printer = AstPrinter::new();
-                println!("{}", ast_printer.print(&expr));
+                match expr {
+                    Ok(expr) => { println!("{}", ast_printer.print(&expr)); }
+                    Err(_) => {},
+                }
             }
             _ => {
                 writeln!(io::stderr(), "Unknown command: {}", command).unwrap();
