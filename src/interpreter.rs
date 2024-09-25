@@ -78,9 +78,15 @@ impl expression::Visitor for Interpreter {
                 return Some(LiteralType::Number(x / y));
             }
             TokenType::Plus => {
-                let x: f64 = left.unwrap().to_string().parse::<f64>().unwrap();
-                let y: f64 = right.unwrap().to_string().parse::<f64>().unwrap();
-                return Some(LiteralType::Number(x + y));
+                match (left, right) {
+                    (Some(LiteralType::Number(x)), Some(LiteralType::Number(y))) => {
+                        return Some(LiteralType::Number(x + y));
+                    },
+                    (Some(LiteralType::String(x)), Some(LiteralType::String(y))) => {
+                        return Some(LiteralType::String(format!("{}{}", x, y)));
+                    },
+                    _ => return None,
+                }
             }
             TokenType::Minus => {
                 let x: f64 = left.unwrap().to_string().parse::<f64>().unwrap();
