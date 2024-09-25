@@ -3,6 +3,7 @@ mod scanner;
 mod parser;
 mod expression;
 mod ast_printer;
+mod interpreter;
 
 use std::env;
 use std::fs;
@@ -13,6 +14,7 @@ use scanner::Scanner;
 use parser::Parser;
 use ast_printer::AstPrinter;
 use token::TokenType;
+use interpreter::Interpreter;
 
 static mut HAD_ERROR: bool = false;
 
@@ -82,7 +84,29 @@ impl Lox {
                 }
             }
             "evaluate" => {
-                println!("Not implemented yet");
+                let file_contents = fs::read_to_string(filename).unwrap_or_else(|_| {
+                    writeln!(io::stderr(), "Failed to read file {}", filename).unwrap();
+                    String::new()
+                });
+
+                let mut scanner = Scanner::new(file_contents);
+                scanner.scan_tokens();
+
+                let tokens = scanner.tokens.into_boxed_slice();
+                let mut parser = Parser::new(tokens);
+                let expr = parser.parse();
+
+                if unsafe { HAD_ERROR } {
+                    exit(65);
+                }
+
+                match expr {
+                    Ok(expr) => {
+                        let mut interpreter = Interpreter::new();
+                        interpreter.interpret(&expr);
+                    }
+                    Err(_) => {},
+                }
             }
             _ => {
                 writeln!(io::stderr(), "Unknown command: {}", command).unwrap();
