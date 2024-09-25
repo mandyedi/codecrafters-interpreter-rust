@@ -1,4 +1,4 @@
-use crate::{expression, token::LiteralType};
+use crate::{expression, token::{LiteralType, TokenType}};
 
 pub struct Interpreter {}
 
@@ -23,6 +23,17 @@ impl Interpreter {
     fn evaluate(&mut self, expression: &expression::Expr) -> Option<LiteralType> {
         expression.accept(self)
     }
+
+    fn is_truthy(&self, value: Option<LiteralType>) -> bool {
+        if value.is_none() {
+            return false;
+        }
+
+        match value.unwrap() {
+            LiteralType::Boolean(value) => return value,
+            _ => return true,
+        }
+    }
 }
 
 impl expression::Visitor for Interpreter {
@@ -37,7 +48,18 @@ impl expression::Visitor for Interpreter {
     }
     
     fn visit_unary(&mut self, unary: &expression::Unary) -> Option<LiteralType> {
-        None
+        let right = self.evaluate(&unary.right);
+        
+        match unary.operator.token_type {
+            TokenType::Minus => {
+                let value = right.unwrap().to_string().parse::<f64>().unwrap();
+                return Some(LiteralType::Number(-value))
+            }
+            TokenType::Bang => {
+                return Some(LiteralType::Boolean(!self.is_truthy(right)));
+            }
+            _ => return None,
+        }
     }
 
     fn visit_binary(&mut self, binary: &expression::Binary) -> Option<LiteralType> {
