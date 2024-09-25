@@ -33,7 +33,7 @@ impl expression::Visitor for Interpreter {
     }
 
     fn visit_grouping(&mut self, grouping: &expression::Grouping) -> Option<LiteralType> {
-        None
+        return self.evaluate(&grouping.expression);
     }
     
     fn visit_unary(&mut self, unary: &expression::Unary) -> Option<LiteralType> {
