@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::token::{Token, TokenType};
+use crate::{error, token::{Token, TokenType}};
 
 pub struct Scanner {
     source: String,
@@ -43,16 +43,16 @@ impl Scanner {
     // TODO: is it ok to return &Vec<Token>?
     // One solution could be to transfer ownership of the tokens vector to the caller:
     // std::mem::take(&mut self.tokens)
-    pub fn scan_tokens(&mut self, had_error: &mut bool) {
+    pub fn scan_tokens(&mut self) {
         while !self.is_at_end() {
             self.start = self.current;
-            self.scan_token(had_error);
+            self.scan_token();
         }
 
         self.tokens.push(Token::new(TokenType::EOF, "".to_owned(), None, self.line));
     }
 
-    fn scan_token(&mut self, had_error: &mut bool) {
+    fn scan_token(&mut self) {
         let c = self.advance();
         match c {
             '(' => self.add_token(TokenType::LeftParen, None),
@@ -92,15 +92,14 @@ impl Scanner {
             }
             ' ' | '\r' | '\t' => {}
             '\n' => { self.line += 1 }
-            '"' => { self.string(had_error);  }
+            '"' => { self.string(); }
             _ => {
                 if self.is_digit(c) {
                     self.number();
                 } else if self.is_alpha(c) {
                     self.identifier();
                 } else {
-                    *had_error = true;
-                    eprintln!("[line {}] Error: Unexpected character: {}", self.line, c);
+                    error(self.line, format!("Unexpected character: {}", c));
                 }
             },
         }
@@ -156,7 +155,7 @@ impl Scanner {
         return self.source.chars().nth(self.current + 1).unwrap_or('\0');
     }
 
-    fn string(&mut self, had_error: &mut bool) {
+    fn string(&mut self) {
         while self.peek() != '"' && !self.is_at_end() {
             if self.peek() == '\n' {
                 self.line += 1;
@@ -165,9 +164,7 @@ impl Scanner {
         }
 
         if self.is_at_end() {
-            // TODO: make had_error a member of Scanner
-            *had_error = true;
-            eprintln!("[line {}] Error: Unterminated string.", self.line);
+            error(self.line, "Unterminated string.".to_string());
             return;
         }
 

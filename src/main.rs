@@ -13,6 +13,17 @@ use scanner::Scanner;
 use parser::Parser;
 use ast_printer::AstPrinter;
 
+static mut HAD_ERROR: bool = false;
+
+pub fn error(line: usize, message: String) {
+    report(line, "", message);
+}
+
+fn report(line: usize, location: &str, message: String) {
+    unsafe { HAD_ERROR = true; }
+    eprintln!("[line {}] Error{}: {}", line, location, message);
+}
+
 struct Lox {
 }
 
@@ -29,13 +40,12 @@ impl Lox {
                 });
 
                 let mut scanner = Scanner::new(file_contents);
-                let mut had_error = false;
-                scanner.scan_tokens(&mut had_error);
+                scanner.scan_tokens();
                 for token in scanner.tokens {
                     println!("{}", token);
                 }
 
-                if had_error {
+                if unsafe { HAD_ERROR } {
                     exit(65);
                 }
             }
@@ -46,14 +56,13 @@ impl Lox {
                 });
 
                 let mut scanner = Scanner::new(file_contents);
-                let mut had_error = false;
-                scanner.scan_tokens(&mut had_error);
+                scanner.scan_tokens();
 
                 let tokens = scanner.tokens.into_boxed_slice();
                 let mut parser = Parser::new(tokens);
                 let expr = parser.parse();
 
-                if had_error {
+                if unsafe { HAD_ERROR } {
                     exit(65);
                 }
 
