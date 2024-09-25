@@ -93,6 +93,17 @@ impl expression::Visitor for Interpreter {
                 let y: f64 = right.unwrap().to_string().parse::<f64>().unwrap();
                 return Some(LiteralType::Number(x - y));
             }
+            TokenType::Greater | TokenType::GreaterEqual | TokenType::Less | TokenType::LessEqual => {
+                let x: f64 = left.unwrap().to_string().parse::<f64>().unwrap();
+                let y: f64 = right.unwrap().to_string().parse::<f64>().unwrap();
+                match binary.operator.token_type {
+                    TokenType::Greater => return Some(LiteralType::Boolean(x > y)),
+                    TokenType::GreaterEqual => return Some(LiteralType::Boolean(x >= y)),
+                    TokenType::Less => return Some(LiteralType::Boolean(x < y)),
+                    TokenType::LessEqual => return Some(LiteralType::Boolean(x <= y)),
+                    _ => return None,
+                }
+            }
             _ => return None,
         }
     }
