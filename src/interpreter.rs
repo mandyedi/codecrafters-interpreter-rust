@@ -63,6 +63,23 @@ impl expression::Visitor for Interpreter {
     }
 
     fn visit_binary(&mut self, binary: &expression::Binary) -> Option<LiteralType> {
+        let left = self.evaluate(&binary.left);
+        let right = self.evaluate(&binary.right);
+
+        match binary.operator.token_type {
+            TokenType::Star => {
+                let x: f64 = left.unwrap().to_string().parse::<f64>().unwrap();
+                let y: f64 = right.unwrap().to_string().parse::<f64>().unwrap();
+                return Some(LiteralType::Number(x * y));
+            }
+            TokenType::Slash => {
+                let x: f64 = left.unwrap().to_string().parse::<f64>().unwrap();
+                let y: f64 = right.unwrap().to_string().parse::<f64>().unwrap();
+                return Some(LiteralType::Number(x / y));
+            }
+            _ => return None,
+        }
+
         None
     }
 }
