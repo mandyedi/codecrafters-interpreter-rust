@@ -65,6 +65,15 @@ impl Interpreter {
             _ => return Err(RuntimeError::new(operator, "Operand must be a number.")),
         }
     }
+
+    fn check_number_operands(&self, operator: &Token, left: &Option<LiteralType>, right: &Option<LiteralType>) -> Result<(f64, f64), RuntimeError> {
+        match (left, right) {
+            (Some(LiteralType::Number(x)), Some(LiteralType::Number(y))) => {
+                return Ok((*x, *y));
+            }
+            _ => { return Err(RuntimeError::new(operator, "Operand must be a number.")); }
+        }
+    }
 }
 
 impl expression::Visitor for Interpreter {
@@ -99,14 +108,14 @@ impl expression::Visitor for Interpreter {
 
         match binary.operator.token_type {
             TokenType::Star => {
-                let x: f64 = left.unwrap().to_string().parse::<f64>().unwrap();
-                let y: f64 = right.unwrap().to_string().parse::<f64>().unwrap();
-                return Ok(Some(LiteralType::Number(x * y)));
+                let (left_number, right_number) = 
+                    self.check_number_operands(&binary.operator, &left, &right)?;
+                return Ok(Some(LiteralType::Number(left_number * right_number)));
             }
             TokenType::Slash => {
-                let x: f64 = left.unwrap().to_string().parse::<f64>().unwrap();
-                let y: f64 = right.unwrap().to_string().parse::<f64>().unwrap();
-                return Ok(Some(LiteralType::Number(x / y)));
+                let (left_number, right_number) = 
+                    self.check_number_operands(&binary.operator, &left, &right)?;
+                return Ok(Some(LiteralType::Number(left_number / right_number)));
             }
             TokenType::Plus => {
                 match (left, right) {
