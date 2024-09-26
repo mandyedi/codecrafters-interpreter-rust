@@ -29,7 +29,7 @@ pub fn error_token(token: &token::Token, message: String) {
     if token.token_type == TokenType::EOF {
         report(token.line, " at end", message);
     } else {
-        report(token.line, &format!("at '{}'", token.lexeme), message);
+        report(token.line, &format!(" at '{}'", token.lexeme), message);
     }
 }
 
