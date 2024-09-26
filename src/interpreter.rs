@@ -125,13 +125,15 @@ impl expression::Visitor for Interpreter {
                     (Some(LiteralType::String(x)), Some(LiteralType::String(y))) => {
                         return Ok(Some(LiteralType::String(format!("{}{}", x, y))));
                     },
-                    _ => return Ok(None),
+                    _ => {},
                 }
+
+                return Err(RuntimeError::new(&binary.operator, "Operands must be two numbers or two strings."));
             }
             TokenType::Minus => {
-                let x: f64 = left.unwrap().to_string().parse::<f64>().unwrap();
-                let y: f64 = right.unwrap().to_string().parse::<f64>().unwrap();
-                return Ok(Some(LiteralType::Number(x - y)));
+                let (left_number, right_number) = 
+                    self.check_number_operands(&binary.operator, &left, &right)?;
+                return Ok(Some(LiteralType::Number(left_number - right_number)));
             }
             TokenType::Greater | TokenType::GreaterEqual | TokenType::Less | TokenType::LessEqual => {
                 let x: f64 = left.unwrap().to_string().parse::<f64>().unwrap();
