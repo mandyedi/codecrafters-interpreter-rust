@@ -80,7 +80,27 @@ impl Parser {
     }
 
     fn expression(&mut self) -> Result<Expr, ParseError> {
-        self.equality()
+        self.assignment()
+    }
+
+    fn assignment(&mut self) -> Result<Expr, ParseError> {
+        let expr = self.equality()?;
+
+        if self.match_single(&TokenType::Equal) {
+            let equals = self.previous().clone();
+            let value = self.assignment()?;
+
+            match expr {
+                Expr::Variable(variable) => {
+                    return Ok(Expr::Assign(Assign::new(variable.name, value)));
+                }
+                _ => {}
+            }
+
+            self.error(&equals, "Invalid assignment target.".to_string());
+        }
+
+        return Ok(expr);
     }
 
     fn equality(&mut self) -> Result<Expr, ParseError> {

@@ -183,6 +183,12 @@ impl expression::Visitor for Interpreter {
     fn visit_variable(&mut self, variable: &Variable) -> Self::Output {
         return Ok(self.environment.get(&variable.name)?.clone());
     }
+
+    fn visit_assign(&mut self, assign: &expression::Assign) -> Self::Output {
+        let value = self.evaluate(&assign.value)?;
+        self.environment.assign(&assign.name, value.clone())?;
+        return Ok(value);
+    }
 }
 
 impl statement::Visitor for Interpreter {

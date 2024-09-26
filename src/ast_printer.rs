@@ -47,5 +47,9 @@ impl Visitor for AstPrinter {
     fn visit_variable(&mut self, variable: &Variable) -> Self::Output {
         return variable.name.lexeme.clone();
     }
+
+    fn visit_assign(&mut self, assign: &Assign) -> Self::Output {
+        return self.parenthesize(&assign.name.lexeme, &vec![&assign.value]);
+    }
 }
 

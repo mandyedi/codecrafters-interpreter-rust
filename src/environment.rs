@@ -16,6 +16,15 @@ impl Environment {
         self.values.insert(name, value);
     }
 
+    pub fn assign(&mut self, name: &Token, value: Option<LiteralType>) -> Result<(), RuntimeError> {
+        if self.values.contains_key(&name.lexeme) {
+            self.values.insert(name.lexeme.clone(), value);
+            return Ok(());
+        }
+
+        return Err(RuntimeError::new(name, format!("Undefined variable '{}'.", name.lexeme).as_str()));
+    }
+
     pub fn get(&self, name: &Token) -> Result<&Option<LiteralType>, RuntimeError> {
         if self.values.contains_key(&name.lexeme) {
             return Ok(self.values.get(&name.lexeme).unwrap());
