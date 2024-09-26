@@ -43,5 +43,9 @@ impl Visitor for AstPrinter {
     fn visit_binary(&mut self, binary: &Binary) -> String {
         return self.parenthesize(&binary.operator.lexeme, &vec![&binary.left, &binary.right]);
     }
+
+    fn visit_variable(&mut self, variable: &Variable) -> Self::Output {
+        return variable.name.lexeme.clone();
+    }
 }
 

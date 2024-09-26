@@ -1,4 +1,4 @@
-use crate::{runtime_error, expression, statement, token::{LiteralType, TokenType, Token}};
+use crate::{expression::{self, Variable}, runtime_error, statement, token::{LiteralType, Token, TokenType}};
 
 #[derive(Debug)]
 pub struct RuntimeError {
@@ -175,6 +175,11 @@ impl expression::Visitor for Interpreter {
             _ => return Ok(None),
         }
     }
+
+    fn visit_variable(&mut self, variable: &Variable) -> Self::Output {
+        // TODO: impolement visit_variable for Interpreter
+        return Ok(None);
+    }
 }
 
 impl statement::Visitor for Interpreter {
@@ -188,6 +193,11 @@ impl statement::Visitor for Interpreter {
 
     fn visit_expression(&mut self, expression: &statement::Expression) -> Self::Output {
         self.evaluate(&expression.expression)?;
+        return Ok(());
+    }
+
+    fn visit_var(&mut self, var: &statement::Var) -> Self::Output {
+        // TODO: implement visit_var for Interpreter
         return Ok(());
     }
 }

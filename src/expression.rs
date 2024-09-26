@@ -54,11 +54,22 @@ impl Binary {
     }
 }
 
+pub struct Variable {
+    pub name: Token,
+}
+
+impl Variable {
+    pub fn new(name: Token) -> Self {
+        Self { name }
+    }
+}
+
 pub enum Expr {
     Literal(Literal),
     Grouping(Grouping),
     Unary(Unary),
     Binary(Binary),
+    Variable(Variable)
 }
 
 impl Expr {
@@ -68,6 +79,7 @@ impl Expr {
             Expr::Grouping(grouping) => visitor.visit_grouping(grouping),
             Expr::Unary(unary) => visitor.visit_unary(unary),
             Expr::Binary(binary) => visitor.visit_binary(binary),
+            Expr::Variable(variable) => visitor.visit_variable(variable),
         };
     }
 }
@@ -78,4 +90,5 @@ pub trait Visitor {
     fn visit_grouping(&mut self, grouping: &Grouping) -> Self::Output;
     fn visit_unary(&mut self, unary: &Unary) -> Self::Output;
     fn visit_binary(&mut self, binary: &Binary) -> Self::Output;
+    fn visit_variable(&mut self, variable: &Variable) -> Self::Output;
 }
