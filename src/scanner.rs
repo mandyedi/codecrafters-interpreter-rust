@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use crate::{error, token::{Token, TokenType}};
 
 pub struct Scanner {
-    source: String,
+    source: Vec<char>,
     pub tokens: Vec<Token>,
     start: usize,
     current: usize,
@@ -14,7 +14,7 @@ pub struct Scanner {
 impl Scanner {
     pub fn new(source: String) -> Self {
         Self {
-            source,
+            source: source.chars().collect(),
             tokens: Vec::new(),
             start: 0,
             current: 0,
@@ -106,18 +106,18 @@ impl Scanner {
     }
 
     fn advance(&mut self) -> char {
-        let c = self.source.chars().nth(self.current).unwrap_or('\0');
+        let c = self.source[self.current];
         self.current += 1;
         return c;
     }
 
     fn add_token(&mut self, token_type: TokenType, literal: Option<String>) {
-        let text: String = self.source[self.start..self.current].to_string();
+        let text: String = self.source[self.start..self.current].into_iter().collect();
         self.tokens.push(Token::new(token_type, text, literal, self.line));
     }
 
     fn add_token_number(&mut self, token_type: TokenType, literal: Option<f64>) {
-        let text: String = self.source[self.start..self.current].to_string();
+        let text: String = self.source[self.start..self.current].into_iter().collect();
         self.tokens.push(Token::new_number(token_type, text, literal, self.line));
     }
 
@@ -130,7 +130,7 @@ impl Scanner {
             return false;
         }
 
-        if self.source.chars().nth(self.current).unwrap_or('\0') != expected {
+        if self.source[self.current] != expected {
             return false;
         }
 
@@ -144,7 +144,7 @@ impl Scanner {
             return '\0';
         }
 
-        return self.source.chars().nth(self.current).unwrap_or('\0');
+        return self.source[self.current];
     }
 
     fn peek_next(&self) -> char {
@@ -152,7 +152,7 @@ impl Scanner {
             return '\0';
         }
 
-        return self.source.chars().nth(self.current + 1).unwrap_or('\0');
+        return self.source[self.current + 1];
     }
 
     fn string(&mut self) {
@@ -170,7 +170,7 @@ impl Scanner {
 
         self.advance();
 
-        let value = self.source[(self.start + 1)..(self.current - 1)].to_string();
+        let value = self.source[(self.start + 1)..(self.current - 1)].into_iter().collect();
         self.add_token(TokenType::String, Some(value));
     }
 
@@ -199,7 +199,8 @@ impl Scanner {
             }
         }
 
-        let value = self.source[self.start..self.current].to_string().parse::<f64>().unwrap();
+        let value_as_string: String = self.source[self.start..self.current].into_iter().collect();
+        let value = str::parse::<f64>(value_as_string.as_str()).unwrap();
         self.add_token_number(TokenType::Number, Some(value));
     }
     
@@ -208,9 +209,9 @@ impl Scanner {
             self.advance();
         }
 
-        let value = &self.source[self.start..self.current];
+        let value: String = self.source[self.start..self.current].into_iter().collect();
 
-        match self.keywords.get(&value) {
+        match self.keywords.get(&*value) {
             Some(token_type) => { self.add_token(token_type.clone(), None); }
             None => { self.add_token(TokenType::Identifier, None); }
 
