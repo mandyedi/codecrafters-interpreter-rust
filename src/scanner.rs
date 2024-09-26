@@ -40,9 +40,6 @@ impl Scanner {
         }
     }
 
-    // TODO: is it ok to return &Vec<Token>?
-    // One solution could be to transfer ownership of the tokens vector to the caller:
-    // std::mem::take(&mut self.tokens)
     pub fn scan_tokens(&mut self) {
         while !self.is_at_end() {
             self.start = self.current;
