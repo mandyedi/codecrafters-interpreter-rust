@@ -1,4 +1,4 @@
-use crate::{error_token, statement::{Statement, Print, Expression, Var}, expression::*, token::*};
+use crate::{error_token, statement::{Statement, Print, Expression, Var, Block}, expression::*, token::*};
 
 pub struct ParseError {}
 
@@ -63,6 +63,10 @@ impl Parser {
         if self.match_single(&TokenType::Print) {
             return Ok(self.print_statement()?);
         }
+
+        if self.match_single(&TokenType::LeftBrace) {
+            return Ok(Statement::Block(Block::new(self.block()?)));
+        }
         
         return Ok(self.expression_statement()?);
     }
@@ -71,6 +75,17 @@ impl Parser {
         let value = self.expression()?;
         self.consume(&TokenType::Semicolon, "Expect ';' after value.")?;
         return Ok(Statement::Print(Print::new(value)));
+    }
+
+    fn block(&mut self) -> Result<Vec<Statement>, ParseError> {
+        let mut statements: Vec<Statement> = Vec::new();
+        
+        while !self.check(&TokenType::RightBrace) && !self.is_at_end() {
+            statements.push(self.declaration()?);
+        }
+
+        self.consume(&TokenType::RightBrace, "Expect '}' after block.")?;
+        return Ok(statements);
     }
 
     fn expression_statement(&mut self) -> Result<Statement, ParseError> {

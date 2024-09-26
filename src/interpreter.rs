@@ -16,13 +16,13 @@ impl RuntimeError {
 }
 
 pub struct Interpreter {
-    environment: Environment,
+    environment: Option<Environment>,
 }
 
 impl Interpreter {
     pub fn new() -> Self {
         Self {
-            environment: Environment::new(),
+            environment: Some(Environment::new(None)),
         }
     }
 
@@ -54,6 +54,24 @@ impl Interpreter {
     fn execute(&mut self, statement: &statement::Statement) -> Result<(), RuntimeError> {
         statement.accept(self)?;
         return Ok(());
+    }
+
+    fn execute_block(&mut self, statements: &Vec<statement::Statement>) -> Result<(), RuntimeError> {
+        self.environment = Some(Environment::new(self.environment.take()));
+
+        let mut error: Result<(), RuntimeError> = Ok(());
+
+        for statement in statements {
+            let result = self.execute(statement);
+            if result.is_err() {
+                error = result;
+                break;
+            }
+        }
+
+        self.environment = self.environment.as_mut().unwrap().enclosing.take().map(|e| *e);
+
+        return error;
     }
 
     fn evaluate(&mut self, expression: &expression::Expr) -> Result<Option<LiteralType>, RuntimeError> {
@@ -181,12 +199,12 @@ impl expression::Visitor for Interpreter {
     }
 
     fn visit_variable(&mut self, variable: &Variable) -> Self::Output {
-        return Ok(self.environment.get(&variable.name)?.clone());
+        return Ok(self.environment.as_ref().unwrap().get(&variable.name)?.clone());
     }
 
     fn visit_assign(&mut self, assign: &expression::Assign) -> Self::Output {
         let value = self.evaluate(&assign.value)?;
-        self.environment.assign(&assign.name, value.clone())?;
+        self.environment.as_mut().unwrap().assign(&assign.name, value.clone())?;
         return Ok(value);
     }
 }
@@ -212,8 +230,13 @@ impl statement::Visitor for Interpreter {
             value = self.evaluate(var.initializer.as_ref().unwrap())?;
         }
 
-        self.environment.define(var.name.lexeme.clone(), value);
+        self.environment.as_mut().unwrap().define(var.name.lexeme.clone(), value);
 
+        return Ok(());
+    }
+
+    fn visit_block(&mut self, block: &statement::Block) -> Self::Output {
+        self.execute_block(&block.statements)?;
         return Ok(());
     }
 }

@@ -38,10 +38,21 @@ impl Var {
     }
 }
 
+pub struct Block {
+    pub statements: Vec<Statement>,
+}
+
+impl Block {
+    pub fn new(statements: Vec<Statement>) -> Self {
+        Self { statements }
+    }
+}
+
 pub enum Statement {
     Print(Print),
     Expression(Expression),
-    Var(Var)
+    Var(Var),
+    Block(Block),
 }
 
 impl Statement {
@@ -50,6 +61,7 @@ impl Statement {
             Statement::Print(print) => visitor.visit_print(print),
             Statement::Expression(expression) => visitor.visit_expression(expression),
             Statement::Var(var) => visitor.visit_var(var),
+            Statement::Block(block) => visitor.visit_block(block),
         };
     }
 }
@@ -59,4 +71,5 @@ pub trait Visitor {
     fn visit_print(&mut self, print: &Print) -> Self::Output;
     fn visit_expression(&mut self, expression: &Expression) -> Self::Output;
     fn visit_var(&mut self, var: &Var) -> Self::Output;
+    fn visit_block(&mut self, block: &Block) -> Self::Output;
 }
