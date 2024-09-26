@@ -1,4 +1,4 @@
-use crate::{error_token, expression::*, token::*};
+use crate::{error_token, statement::Statement, expression::*, token::*};
 
 pub struct ParseError {}
 
@@ -25,7 +25,10 @@ impl Parser {
         self.expression().ok()
     }
 
-    pub fn parse(&mut self) {}
+    pub fn parse(&mut self) -> Vec<Statement> {
+        let mut statements = Vec::new();
+        return statements;
+    }
 
     fn expression(&mut self) -> Result<Expr, ParseError> {
         self.equality()

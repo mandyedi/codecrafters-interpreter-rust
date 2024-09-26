@@ -4,6 +4,7 @@ mod parser;
 mod expression;
 mod ast_printer;
 mod interpreter;
+mod statement;
 
 use std::env;
 use std::fs;
@@ -16,6 +17,7 @@ use ast_printer::AstPrinter;
 use token::TokenType;
 use interpreter::Interpreter;
 use interpreter::RuntimeError;
+use statement::Statement;
 
 static mut HAD_ERROR: bool = false;
 static mut HAD_RUNTIME_ERROR: bool = false;
@@ -122,15 +124,14 @@ impl Lox {
 
                 let tokens = scanner.tokens.into_boxed_slice();
                 let mut parser = Parser::new(tokens);
-                // TODO: return Vec<Statement>
-                parser.parse();
+                let statements = parser.parse();
 
                 if unsafe { HAD_ERROR } {
                     exit(65);
                 }
 
                 let mut interpreter = Interpreter::new();
-                interpreter.interpret(/*TODO: pass Vec<Statement> */);
+                interpreter.interpret(statements);
 
                 if unsafe { HAD_RUNTIME_ERROR } {
                     exit(70);

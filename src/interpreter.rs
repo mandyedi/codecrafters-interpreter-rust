@@ -1,4 +1,4 @@
-use crate::{runtime_error, expression, token::{LiteralType, TokenType, Token}};
+use crate::{runtime_error, expression, statement, token::{LiteralType, TokenType, Token}};
 
 #[derive(Debug)]
 pub struct RuntimeError {
@@ -32,7 +32,7 @@ impl Interpreter {
         runtime_error(result.unwrap_err());
     }
 
-    pub fn interpret(&mut self) {}
+    pub fn interpret(&mut self, statements: Vec<statement::Statement>) {}
 
     fn evaluate(&mut self, expression: &expression::Expr) -> Result<Option<LiteralType>, RuntimeError> {
         expression.accept(self)
@@ -156,5 +156,13 @@ impl expression::Visitor for Interpreter {
             }
             _ => return Ok(None),
         }
+    }
+}
+
+impl statement::Visitor for Interpreter {
+    type Output = Result<(), RuntimeError>;
+
+    fn visit_print(&self, print: &statement::Print) -> Self::Output {
+        return Ok(());
     }
 }
