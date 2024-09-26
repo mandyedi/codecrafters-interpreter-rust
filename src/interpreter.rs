@@ -32,7 +32,25 @@ impl Interpreter {
         runtime_error(result.unwrap_err());
     }
 
-    pub fn interpret(&mut self, statements: Vec<statement::Statement>) {}
+    pub fn interpret(&mut self, statements: Vec<statement::Statement>) {
+        let mut error: Option<RuntimeError> = None;
+        for statement in statements {
+            let result = self.execute(&statement);
+            if result.is_err() {
+                error = result.err();
+                break;
+            }
+        }
+
+        if error.is_some() {
+            runtime_error(error.unwrap());
+        }
+    }
+
+    fn execute(&mut self, statement: &statement::Statement) -> Result<(), RuntimeError> {
+        statement.accept(self)?;
+        return Ok(());
+    }
 
     fn evaluate(&mut self, expression: &expression::Expr) -> Result<Option<LiteralType>, RuntimeError> {
         expression.accept(self)
@@ -162,7 +180,14 @@ impl expression::Visitor for Interpreter {
 impl statement::Visitor for Interpreter {
     type Output = Result<(), RuntimeError>;
 
-    fn visit_print(&self, print: &statement::Print) -> Self::Output {
+    fn visit_print(&mut self, print: &statement::Print) -> Self::Output {
+        let value = self.evaluate(&print.expression)?;
+        println!("{}", self.stringify(&value));
+        return Ok(());
+    }
+
+    fn visit_expression(&mut self, expression: &statement::Expression) -> Self::Output {
+        self.evaluate(&expression.expression)?;
         return Ok(());
     }
 }

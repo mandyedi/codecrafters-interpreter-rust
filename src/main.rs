@@ -17,7 +17,6 @@ use ast_printer::AstPrinter;
 use token::TokenType;
 use interpreter::Interpreter;
 use interpreter::RuntimeError;
-use statement::Statement;
 
 static mut HAD_ERROR: bool = false;
 static mut HAD_RUNTIME_ERROR: bool = false;

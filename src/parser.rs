@@ -1,4 +1,4 @@
-use crate::{error_token, statement::Statement, expression::*, token::*};
+use crate::{error_token, statement::{Statement, Print, Expression}, expression::*, token::*};
 
 pub struct ParseError {}
 
@@ -27,7 +27,35 @@ impl Parser {
 
     pub fn parse(&mut self) -> Vec<Statement> {
         let mut statements = Vec::new();
+        while !self.is_at_end() {
+            let statement = self.statement();
+            if statement.is_ok() {
+                statements.push(statement.ok().unwrap());
+            } else {
+                self.synchronize();
+            }
+        }
         return statements;
+    }
+
+    fn statement(&mut self) -> Result<Statement, ParseError> {
+        if self.match_single(&TokenType::Print) {
+            return Ok(self.print_statement()?);
+        }
+        
+        return Ok(self.expression_statement()?);
+    }
+
+    fn print_statement(&mut self) -> Result<Statement, ParseError> {
+        let value = self.expression()?;
+        self.consume(&TokenType::Semicolon, "Expect ';' after value.")?;
+        return Ok(Statement::Print(Print::new(value)));
+    }
+
+    fn expression_statement(&mut self) -> Result<Statement, ParseError> {
+        let expression = self.expression()?;
+        self.consume(&TokenType::Semicolon, "Expect ';' after expression.")?;
+        return Ok(Statement::Expression(Expression::new(expression)));
     }
 
     fn expression(&mut self) -> Result<Expr, ParseError> {
@@ -163,7 +191,7 @@ impl Parser {
     }
 
     fn is_at_end(&self) -> bool {
-        self.tokens.len() <= self.current
+        self.peek().token_type == TokenType::EOF
     }
 
     fn peek(&self) -> &Token {
@@ -177,5 +205,27 @@ impl Parser {
     fn error(&self, token: &Token, message: String) -> ParseError {
         error_token(token, message);
         return ParseError::new();
+    }
+
+    fn synchronize(&mut self) {
+        self.advance();
+
+        while !self.is_at_end() {
+            if self.previous().token_type == TokenType::Semicolon {
+                return;
+            }
+
+            match self.peek().token_type {
+                TokenType::Class
+                | TokenType::Fun
+                | TokenType::Var
+                | TokenType::For
+                | TokenType::If
+                | TokenType::While
+                | TokenType::Print
+                | TokenType::Return => return,
+                _ => { self.advance(); }
+            }
+        }
     }
 }
