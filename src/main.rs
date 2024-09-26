@@ -54,10 +54,7 @@ impl Lox {
 
         match command.as_str() {
             "tokenize" => {
-                let file_contents = fs::read_to_string(filename).unwrap_or_else(|_| {
-                    writeln!(io::stderr(), "Failed to read file {}", filename).unwrap();
-                    String::new()
-                });
+                let file_contents = self.read_file(filename);
 
                 let mut scanner = Scanner::new(file_contents);
                 scanner.scan_tokens();
@@ -70,10 +67,7 @@ impl Lox {
                 }
             }
             "parse" => {
-                let file_contents = fs::read_to_string(filename).unwrap_or_else(|_| {
-                    writeln!(io::stderr(), "Failed to read file {}", filename).unwrap();
-                    String::new()
-                });
+                let file_contents = self.read_file(filename);
 
                 let mut scanner = Scanner::new(file_contents);
                 scanner.scan_tokens();
@@ -90,10 +84,7 @@ impl Lox {
                 println!("{}", ast_printer.print(expr.as_ref().unwrap()));
             }
             "evaluate" => {
-                let file_contents = fs::read_to_string(filename).unwrap_or_else(|_| {
-                    writeln!(io::stderr(), "Failed to read file {}", filename).unwrap();
-                    String::new()
-                });
+                let file_contents = self.read_file(filename);
 
                 let mut scanner = Scanner::new(file_contents);
                 scanner.scan_tokens();
@@ -114,10 +105,7 @@ impl Lox {
                 }
             }
             "run" => {
-                let file_contents = fs::read_to_string(filename).unwrap_or_else(|_| {
-                    writeln!(io::stderr(), "Failed to read file {}", filename).unwrap();
-                    String::new()
-                });
+                let file_contents = self.read_file(filename);
 
                 let mut scanner = Scanner::new(file_contents);
                 scanner.scan_tokens();
@@ -142,6 +130,14 @@ impl Lox {
                 return;
             }
         }
+    }
+
+    fn read_file(&self, filename: &String) -> String {
+        let file_contents = fs::read_to_string(filename).unwrap_or_else(|_| {
+            writeln!(io::stderr(), "Failed to read file {}", filename).unwrap();
+            String::new()
+        });
+        return file_contents;
     }
 
     fn _error(&mut self, line: u32, message: &str) {
