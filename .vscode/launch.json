@@ -61,6 +61,24 @@
         {
             "type": "lldb",
             "request": "launch",
+            "name": "Debug run 'codecrafters-interpreter'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=codecrafters-interpreter",
+                    "--package=codecrafters-interpreter"
+                ],
+                "filter": {
+                    "name": "codecrafters-interpreter",
+                    "kind": "bin"
+                }
+            },
+            "args": ["run", "${workspaceFolder}/src/test.lox"],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
             "name": "Debug unit tests in executable 'codecrafters-interpreter'",
             "cargo": {
                 "args": [

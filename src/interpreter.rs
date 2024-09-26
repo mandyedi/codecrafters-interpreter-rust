@@ -22,7 +22,7 @@ impl Interpreter {
         Self {}
     }
 
-    pub fn interpret(&mut self, expression: &expression::Expr) {
+    pub fn interpret_expression(&mut self, expression: &expression::Expr) {
         let result = self.evaluate(expression);
         if result.is_ok() {
             println!("{}", self.stringify(&result.as_ref().unwrap()));
@@ -31,6 +31,8 @@ impl Interpreter {
 
         runtime_error(result.unwrap_err());
     }
+
+    pub fn interpret(&mut self) {}
 
     fn evaluate(&mut self, expression: &expression::Expr) -> Result<Option<LiteralType>, RuntimeError> {
         expression.accept(self)

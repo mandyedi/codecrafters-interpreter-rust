@@ -78,7 +78,7 @@ impl Lox {
 
                 let tokens = scanner.tokens.into_boxed_slice();
                 let mut parser = Parser::new(tokens);
-                let expr = parser.parse();
+                let expr = parser.parse_expression();
 
                 if unsafe { HAD_ERROR } {
                     exit(65);
@@ -98,14 +98,39 @@ impl Lox {
 
                 let tokens = scanner.tokens.into_boxed_slice();
                 let mut parser = Parser::new(tokens);
-                let expr = parser.parse();
+                let expr = parser.parse_expression();
 
                 if unsafe { HAD_ERROR } {
                     exit(65);
                 }
 
                 let mut interpreter = Interpreter::new();
-                interpreter.interpret(expr.as_ref().unwrap());
+                interpreter.interpret_expression(expr.as_ref().unwrap());
+
+                if unsafe { HAD_RUNTIME_ERROR } {
+                    exit(70);
+                }
+            }
+            "run" => {
+                let file_contents = fs::read_to_string(filename).unwrap_or_else(|_| {
+                    writeln!(io::stderr(), "Failed to read file {}", filename).unwrap();
+                    String::new()
+                });
+
+                let mut scanner = Scanner::new(file_contents);
+                scanner.scan_tokens();
+
+                let tokens = scanner.tokens.into_boxed_slice();
+                let mut parser = Parser::new(tokens);
+                // TODO: return Vec<Statement>
+                parser.parse();
+
+                if unsafe { HAD_ERROR } {
+                    exit(65);
+                }
+
+                let mut interpreter = Interpreter::new();
+                interpreter.interpret(/*TODO: pass Vec<Statement> */);
 
                 if unsafe { HAD_RUNTIME_ERROR } {
                     exit(70);
