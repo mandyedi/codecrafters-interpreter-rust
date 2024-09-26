@@ -136,13 +136,13 @@ impl expression::Visitor for Interpreter {
                 return Ok(Some(LiteralType::Number(left_number - right_number)));
             }
             TokenType::Greater | TokenType::GreaterEqual | TokenType::Less | TokenType::LessEqual => {
-                let x: f64 = left.unwrap().to_string().parse::<f64>().unwrap();
-                let y: f64 = right.unwrap().to_string().parse::<f64>().unwrap();
+                let (left_number, right_number) = 
+                    self.check_number_operands(&binary.operator, &left, &right)?;
                 match binary.operator.token_type {
-                    TokenType::Greater => return Ok(Some(LiteralType::Boolean(x > y))),
-                    TokenType::GreaterEqual => return Ok(Some(LiteralType::Boolean(x >= y))),
-                    TokenType::Less => return Ok(Some(LiteralType::Boolean(x < y))),
-                    TokenType::LessEqual => return Ok(Some(LiteralType::Boolean(x <= y))),
+                    TokenType::Greater => return Ok(Some(LiteralType::Boolean(left_number > right_number))),
+                    TokenType::GreaterEqual => return Ok(Some(LiteralType::Boolean(left_number >= right_number))),
+                    TokenType::Less => return Ok(Some(LiteralType::Boolean(left_number < right_number))),
+                    TokenType::LessEqual => return Ok(Some(LiteralType::Boolean(left_number <= right_number))),
                     _ => return Ok(None),
                 }
             }
