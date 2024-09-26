@@ -1,4 +1,4 @@
-use crate::{expression::{self, Variable}, runtime_error, statement, token::{LiteralType, Token, TokenType}};
+use crate::{expression::{self, Variable}, runtime_error, statement, token::{LiteralType, Token, TokenType}, environment::Environment};
 
 #[derive(Debug)]
 pub struct RuntimeError {
@@ -15,11 +15,15 @@ impl RuntimeError {
     }
 }
 
-pub struct Interpreter {}
+pub struct Interpreter {
+    environment: Environment,
+}
 
 impl Interpreter {
     pub fn new() -> Self {
-        Self {}
+        Self {
+            environment: Environment::new(),
+        }
     }
 
     pub fn interpret_expression(&mut self, expression: &expression::Expr) {
@@ -177,8 +181,7 @@ impl expression::Visitor for Interpreter {
     }
 
     fn visit_variable(&mut self, variable: &Variable) -> Self::Output {
-        // TODO: impolement visit_variable for Interpreter
-        return Ok(None);
+        return Ok(self.environment.get(&variable.name)?.clone());
     }
 }
 
@@ -197,7 +200,14 @@ impl statement::Visitor for Interpreter {
     }
 
     fn visit_var(&mut self, var: &statement::Var) -> Self::Output {
-        // TODO: implement visit_var for Interpreter
+        let mut value: Option<LiteralType> = None;
+
+        if var.initializer.is_some() {
+            value = self.evaluate(var.initializer.as_ref().unwrap())?;
+        }
+
+        self.environment.define(var.name.lexeme.clone(), value);
+
         return Ok(());
     }
 }

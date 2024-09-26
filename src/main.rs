@@ -5,6 +5,7 @@ mod expression;
 mod ast_printer;
 mod interpreter;
 mod statement;
+mod environment;
 
 use std::env;
 use std::fs;

@@ -168,6 +168,10 @@ impl Parser {
             return Ok(Expr::Grouping(Grouping::new(expr)));
         }
 
+        if self.match_single(&TokenType::Identifier) {
+            return Ok(Expr::Variable(Variable::new(self.previous().clone())));
+        }
+
         return Err(self.error(self.peek(), "Expect expression.".to_string()));
     }
 
