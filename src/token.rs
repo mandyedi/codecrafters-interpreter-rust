@@ -75,7 +75,7 @@ impl Display for TokenType {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum LiteralType {
     String(String),
     Number(f64),

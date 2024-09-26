@@ -104,6 +104,12 @@ impl expression::Visitor for Interpreter {
                     _ => return None,
                 }
             }
+            TokenType::EqualEqual => {
+                return Some(LiteralType::Boolean(left == right));
+            }
+            TokenType::BangEqual => {
+                return Some(LiteralType::Boolean(left != right));
+            }
             _ => return None,
         }
     }
