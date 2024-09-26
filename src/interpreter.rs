@@ -1,4 +1,19 @@
-use crate::{expression, token::{LiteralType, TokenType}};
+use crate::{runtime_error, expression, token::{LiteralType, TokenType, Token}};
+
+#[derive(Debug)]
+pub struct RuntimeError {
+    pub token: Token,
+    pub message: String,
+}
+
+impl RuntimeError {
+    pub fn new(token: &Token, message: &str) -> Self {
+        return RuntimeError {
+            token: token.clone(),
+            message: message.to_string(),
+        };
+    }
+}
 
 pub struct Interpreter {}
 
@@ -9,19 +24,28 @@ impl Interpreter {
 
     pub fn interpret(&mut self, expression: &expression::Expr) {
         let result = self.evaluate(expression);
-        match result {
-            Some(result) => {
-                match result {
-                    LiteralType::Number(_) => println!("{}", result.to_string().trim_end_matches(".0")),
-                    _ => println!("{}", result)
-                }
-            }
-            None => println!("nil"),
+        if result.is_ok() {
+            println!("{}", self.stringify(&result.as_ref().unwrap()));
+            return;
         }
+
+        runtime_error(result.unwrap_err());
     }
 
-    fn evaluate(&mut self, expression: &expression::Expr) -> Option<LiteralType> {
+    fn evaluate(&mut self, expression: &expression::Expr) -> Result<Option<LiteralType>, RuntimeError> {
         expression.accept(self)
+    }
+
+    fn stringify(&self, value: &Option<LiteralType>) -> String {
+        match value {
+            Some(result) => {
+                match result {
+                    LiteralType::Number(_) => { return value.as_ref().unwrap().to_string().trim_end_matches(".0").to_string(); },
+                    _ => { return result.to_string(); }
+                }
+            }
+            None => { return "nil".to_string(); }
+        }
     }
 
     fn is_truthy(&self, value: Option<LiteralType>) -> bool {
@@ -34,83 +58,90 @@ impl Interpreter {
             _ => return true,
         }
     }
+
+    fn check_number_operand(&self, operator: &Token, operand: &Option<LiteralType>) -> Result<f64, RuntimeError> {
+        match operand {
+            Some(LiteralType::Number(value)) => return Ok(*value),
+            _ => return Err(RuntimeError::new(operator, "Operand must be a number.")),
+        }
+    }
 }
 
 impl expression::Visitor for Interpreter {
-    type Output = Option<LiteralType>;
+    type Output = Result<Option<LiteralType>, RuntimeError>;
 
-    fn visit_literal(&mut self, literal: &expression::Literal) -> Option<LiteralType> {
-        return literal.value.to_owned();
+    fn visit_literal(&mut self, literal: &expression::Literal) -> Self::Output {
+        return Ok(literal.value.to_owned());
     }
 
-    fn visit_grouping(&mut self, grouping: &expression::Grouping) -> Option<LiteralType> {
+    fn visit_grouping(&mut self, grouping: &expression::Grouping) -> Self::Output {
         return self.evaluate(&grouping.expression);
     }
     
-    fn visit_unary(&mut self, unary: &expression::Unary) -> Option<LiteralType> {
-        let right = self.evaluate(&unary.right);
+    fn visit_unary(&mut self, unary: &expression::Unary) -> Self::Output {
+        let right = self.evaluate(&unary.right)?;
         
         match unary.operator.token_type {
             TokenType::Minus => {
-                let value = right.unwrap().to_string().parse::<f64>().unwrap();
-                return Some(LiteralType::Number(-value))
+                let number = self.check_number_operand(&unary.operator, &right)?;
+                return Ok(Some(LiteralType::Number(-number)));
             }
             TokenType::Bang => {
-                return Some(LiteralType::Boolean(!self.is_truthy(right)));
+                return Ok(Some(LiteralType::Boolean(!self.is_truthy(right))));
             }
-            _ => return None,
+            _ => return Ok(None),
         }
     }
 
-    fn visit_binary(&mut self, binary: &expression::Binary) -> Option<LiteralType> {
-        let left = self.evaluate(&binary.left);
-        let right = self.evaluate(&binary.right);
+    fn visit_binary(&mut self, binary: &expression::Binary) -> Self::Output {
+        let left = self.evaluate(&binary.left)?;
+        let right = self.evaluate(&binary.right)?;
 
         match binary.operator.token_type {
             TokenType::Star => {
                 let x: f64 = left.unwrap().to_string().parse::<f64>().unwrap();
                 let y: f64 = right.unwrap().to_string().parse::<f64>().unwrap();
-                return Some(LiteralType::Number(x * y));
+                return Ok(Some(LiteralType::Number(x * y)));
             }
             TokenType::Slash => {
                 let x: f64 = left.unwrap().to_string().parse::<f64>().unwrap();
                 let y: f64 = right.unwrap().to_string().parse::<f64>().unwrap();
-                return Some(LiteralType::Number(x / y));
+                return Ok(Some(LiteralType::Number(x / y)));
             }
             TokenType::Plus => {
                 match (left, right) {
                     (Some(LiteralType::Number(x)), Some(LiteralType::Number(y))) => {
-                        return Some(LiteralType::Number(x + y));
+                        return Ok(Some(LiteralType::Number(x + y)));
                     },
                     (Some(LiteralType::String(x)), Some(LiteralType::String(y))) => {
-                        return Some(LiteralType::String(format!("{}{}", x, y)));
+                        return Ok(Some(LiteralType::String(format!("{}{}", x, y))));
                     },
-                    _ => return None,
+                    _ => return Ok(None),
                 }
             }
             TokenType::Minus => {
                 let x: f64 = left.unwrap().to_string().parse::<f64>().unwrap();
                 let y: f64 = right.unwrap().to_string().parse::<f64>().unwrap();
-                return Some(LiteralType::Number(x - y));
+                return Ok(Some(LiteralType::Number(x - y)));
             }
             TokenType::Greater | TokenType::GreaterEqual | TokenType::Less | TokenType::LessEqual => {
                 let x: f64 = left.unwrap().to_string().parse::<f64>().unwrap();
                 let y: f64 = right.unwrap().to_string().parse::<f64>().unwrap();
                 match binary.operator.token_type {
-                    TokenType::Greater => return Some(LiteralType::Boolean(x > y)),
-                    TokenType::GreaterEqual => return Some(LiteralType::Boolean(x >= y)),
-                    TokenType::Less => return Some(LiteralType::Boolean(x < y)),
-                    TokenType::LessEqual => return Some(LiteralType::Boolean(x <= y)),
-                    _ => return None,
+                    TokenType::Greater => return Ok(Some(LiteralType::Boolean(x > y))),
+                    TokenType::GreaterEqual => return Ok(Some(LiteralType::Boolean(x >= y))),
+                    TokenType::Less => return Ok(Some(LiteralType::Boolean(x < y))),
+                    TokenType::LessEqual => return Ok(Some(LiteralType::Boolean(x <= y))),
+                    _ => return Ok(None),
                 }
             }
             TokenType::EqualEqual => {
-                return Some(LiteralType::Boolean(left == right));
+                return Ok(Some(LiteralType::Boolean(left == right)));
             }
             TokenType::BangEqual => {
-                return Some(LiteralType::Boolean(left != right));
+                return Ok(Some(LiteralType::Boolean(left != right)));
             }
-            _ => return None,
+            _ => return Ok(None),
         }
     }
 }

@@ -15,8 +15,10 @@ use parser::Parser;
 use ast_printer::AstPrinter;
 use token::TokenType;
 use interpreter::Interpreter;
+use interpreter::RuntimeError;
 
 static mut HAD_ERROR: bool = false;
+static mut HAD_RUNTIME_ERROR: bool = false;
 
 pub fn error(line: usize, message: String) {
     report(line, "", message);
@@ -28,6 +30,11 @@ pub fn error_token(token: &token::Token, message: String) {
     } else {
         report(token.line, &format!("at '{}'", token.lexeme), message);
     }
+}
+
+pub fn runtime_error(error: RuntimeError) {
+    eprintln!("{}\n[line {}]", error.message, error.token.line);
+    unsafe { HAD_RUNTIME_ERROR = true };
 }
 
 fn report(line: usize, location: &str, message: String) {
@@ -78,10 +85,7 @@ impl Lox {
                 }
 
                 let mut ast_printer = AstPrinter::new();
-                match expr {
-                    Ok(expr) => { println!("{}", ast_printer.print(&expr)); }
-                    Err(_) => {},
-                }
+                println!("{}", ast_printer.print(expr.as_ref().unwrap()));
             }
             "evaluate" => {
                 let file_contents = fs::read_to_string(filename).unwrap_or_else(|_| {
@@ -100,12 +104,11 @@ impl Lox {
                     exit(65);
                 }
 
-                match expr {
-                    Ok(expr) => {
-                        let mut interpreter = Interpreter::new();
-                        interpreter.interpret(&expr);
-                    }
-                    Err(_) => {},
+                let mut interpreter = Interpreter::new();
+                interpreter.interpret(expr.as_ref().unwrap());
+
+                if unsafe { HAD_RUNTIME_ERROR } {
+                    exit(70);
                 }
             }
             _ => {

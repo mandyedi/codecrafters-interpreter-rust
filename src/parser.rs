@@ -21,8 +21,8 @@ impl Parser {
         }
     }
 
-    pub fn parse(&mut self) -> Result<Expr, ParseError> {
-        self.expression()
+    pub fn parse(&mut self) -> Option<Expr> {
+        self.expression().ok()
     }
 
     fn expression(&mut self) -> Result<Expr, ParseError> {
