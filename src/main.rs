@@ -132,7 +132,7 @@ impl Lox {
         }
     }
 
-    fn read_file(&self, filename: &String) -> String {
+    fn read_file(&self, filename: &str) -> String {
         let file_contents = fs::read_to_string(filename).unwrap_or_else(|_| {
             writeln!(io::stderr(), "Failed to read file {}", filename).unwrap();
             String::new()
