@@ -17,6 +17,7 @@ use parser::Parser;
 use ast_printer::AstPrinter;
 use token::Token;
 use token::TokenType;
+use expression::Expr;
 use interpreter::Interpreter;
 use interpreter::RuntimeError;
 
@@ -66,11 +67,7 @@ impl Lox {
                 }
             }
             "parse" => {
-                let tokens = self.tokenize(filename);
-
-                let tokens = tokens.into_boxed_slice();
-                let mut parser = Parser::new(tokens);
-                let expr = parser.parse_expression();
+                let expr = self.parse_expression(filename);
 
                 if unsafe { HAD_ERROR } {
                     exit(65);
@@ -80,11 +77,7 @@ impl Lox {
                 println!("{}", ast_printer.print(expr.as_ref().unwrap()));
             }
             "evaluate" => {
-                let tokens = self.tokenize(filename);
-
-                let tokens = tokens.into_boxed_slice();
-                let mut parser = Parser::new(tokens);
-                let expr = parser.parse_expression();
+                let expr = self.parse_expression(filename);
 
                 if unsafe { HAD_ERROR } {
                     exit(65);
@@ -137,6 +130,14 @@ impl Lox {
         scanner.scan_tokens();
 
         return scanner.tokens;
+    }
+
+    fn parse_expression(&self, filename: &str) -> Option<Expr> {
+        let tokens = self.tokenize(filename);
+        let tokens = tokens.into_boxed_slice();
+        let mut parser = Parser::new(tokens);
+
+        return parser.parse_expression();
     }
 
     fn _error(&mut self, line: u32, message: &str) {
