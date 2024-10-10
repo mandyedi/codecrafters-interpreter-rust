@@ -15,6 +15,7 @@ use std::process::exit;
 use scanner::Scanner;
 use parser::Parser;
 use ast_printer::AstPrinter;
+use token::Token;
 use token::TokenType;
 use interpreter::Interpreter;
 use interpreter::RuntimeError;
@@ -54,11 +55,9 @@ impl Lox {
 
         match command.as_str() {
             "tokenize" => {
-                let file_contents = self.read_file(filename);
+                let tokens = self.tokenize(filename);
 
-                let mut scanner = Scanner::new(file_contents);
-                scanner.scan_tokens();
-                for token in scanner.tokens {
+                for token in tokens {
                     println!("{}", token);
                 }
 
@@ -67,12 +66,9 @@ impl Lox {
                 }
             }
             "parse" => {
-                let file_contents = self.read_file(filename);
+                let tokens = self.tokenize(filename);
 
-                let mut scanner = Scanner::new(file_contents);
-                scanner.scan_tokens();
-
-                let tokens = scanner.tokens.into_boxed_slice();
+                let tokens = tokens.into_boxed_slice();
                 let mut parser = Parser::new(tokens);
                 let expr = parser.parse_expression();
 
@@ -84,12 +80,9 @@ impl Lox {
                 println!("{}", ast_printer.print(expr.as_ref().unwrap()));
             }
             "evaluate" => {
-                let file_contents = self.read_file(filename);
+                let tokens = self.tokenize(filename);
 
-                let mut scanner = Scanner::new(file_contents);
-                scanner.scan_tokens();
-
-                let tokens = scanner.tokens.into_boxed_slice();
+                let tokens = tokens.into_boxed_slice();
                 let mut parser = Parser::new(tokens);
                 let expr = parser.parse_expression();
 
@@ -105,12 +98,9 @@ impl Lox {
                 }
             }
             "run" => {
-                let file_contents = self.read_file(filename);
+                let tokens = self.tokenize(filename);
 
-                let mut scanner = Scanner::new(file_contents);
-                scanner.scan_tokens();
-
-                let tokens = scanner.tokens.into_boxed_slice();
+                let tokens = tokens.into_boxed_slice();
                 let mut parser = Parser::new(tokens);
                 let statements = parser.parse();
 
@@ -138,6 +128,15 @@ impl Lox {
             String::new()
         });
         return file_contents;
+    }
+
+    fn tokenize(&self, filename: &str) -> Vec<Token> {
+        let source = self.read_file(filename);
+
+        let mut scanner = Scanner::new(source);
+        scanner.scan_tokens();
+
+        return scanner.tokens;
     }
 
     fn _error(&mut self, line: u32, message: &str) {
