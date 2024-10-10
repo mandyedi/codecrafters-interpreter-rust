@@ -15,6 +15,7 @@ use std::process::exit;
 use scanner::Scanner;
 use parser::Parser;
 use ast_printer::AstPrinter;
+use statement::Statement;
 use token::Token;
 use token::TokenType;
 use expression::Expr;
@@ -91,11 +92,7 @@ impl Lox {
                 }
             }
             "run" => {
-                let tokens = self.tokenize(filename);
-
-                let tokens = tokens.into_boxed_slice();
-                let mut parser = Parser::new(tokens);
-                let statements = parser.parse();
+                let statements = self.parse(filename);
 
                 if unsafe { HAD_ERROR } {
                     exit(65);
@@ -138,6 +135,14 @@ impl Lox {
         let mut parser = Parser::new(tokens);
 
         return parser.parse_expression();
+    }
+
+    fn parse(&self, filename: &str) -> Vec<Statement> {
+        let tokens = self.tokenize(filename);
+        let tokens = tokens.into_boxed_slice();
+        let mut parser = Parser::new(tokens);
+        
+        return parser.parse();
     }
 
     fn _error(&mut self, line: u32, message: &str) {
