@@ -1,4 +1,4 @@
-use crate::{error_token, statement::{Statement, Print, Expression, Var, Block}, expression::*, token::*};
+use crate::{error_token, statement::{Statement, Print, Expression, Var, Block, If}, expression::*, token::*};
 
 pub struct ParseError {}
 
@@ -60,6 +60,10 @@ impl Parser {
     }
 
     fn statement(&mut self) -> Result<Statement, ParseError> {
+        if self.match_single(&TokenType::If) {
+            return Ok(self.if_statement()?);
+        }
+
         if self.match_single(&TokenType::Print) {
             return Ok(self.print_statement()?);
         }
@@ -69,6 +73,20 @@ impl Parser {
         }
         
         return Ok(self.expression_statement()?);
+    }
+
+    fn if_statement(&mut self) -> Result<Statement, ParseError> {
+        self.consume(&TokenType::LeftParen, "Expect '(' after 'if'.")?;
+        let condition = self.expression()?;
+        self.consume(&TokenType::RightParen, "Expect ')' after if condition.")?;
+        
+        let then_branch = self.statement()?;
+        let mut else_branch: Option<Statement> = None;
+        if self.match_single(&TokenType::Else) {
+            else_branch = Some(self.statement()?);
+        }
+
+        return Ok(Statement::If(If::new(condition, then_branch, else_branch)));
     }
 
     fn print_statement(&mut self) -> Result<Statement, ParseError> {

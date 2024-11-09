@@ -239,4 +239,15 @@ impl statement::Visitor for Interpreter {
         self.execute_block(&block.statements)?;
         return Ok(());
     }
+
+    fn visit_if(&mut self, if_statement: &statement::If) -> Self::Output {
+        let value = self.evaluate(&if_statement.condition)?;
+        if self.is_truthy(value) {
+            self.execute(&if_statement.then_branch)?;
+        } else if if_statement.else_branch.is_some() {
+            self.execute(if_statement.else_branch.as_ref().unwrap())?;
+        }
+
+        return Ok(());
+    }
 }
