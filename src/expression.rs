@@ -78,6 +78,22 @@ impl Assign {
     }
 }
 
+pub struct Logical {
+    pub left: Box<Expr>,
+    pub operator: Token,
+    pub right: Box<Expr>,
+}
+
+impl Logical {
+    pub fn new(left: Expr, operator: Token, right: Expr) -> Self {
+        Self {
+            left: Box::new(left),
+            operator,
+            right: Box::new(right),
+        }
+    }
+}
+
 pub enum Expr {
     Literal(Literal),
     Grouping(Grouping),
@@ -85,6 +101,7 @@ pub enum Expr {
     Binary(Binary),
     Variable(Variable),
     Assign(Assign),
+    Logical(Logical),
 }
 
 impl Expr {
@@ -96,6 +113,7 @@ impl Expr {
             Expr::Binary(binary) => visitor.visit_binary(binary),
             Expr::Variable(variable) => visitor.visit_variable(variable),
             Expr::Assign(assign) => visitor.visit_assign(assign),
+            Expr::Logical(logical) => visitor.visit_logical(logical),
         };
     }
 }
@@ -108,4 +126,5 @@ pub trait Visitor {
     fn visit_binary(&mut self, binary: &Binary) -> Self::Output;
     fn visit_variable(&mut self, variable: &Variable) -> Self::Output;
     fn visit_assign(&mut self, assign: &Assign) -> Self::Output;
+    fn visit_logical(&mut self, logical: &Logical) -> Self::Output;
 }

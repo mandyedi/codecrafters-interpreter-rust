@@ -90,13 +90,13 @@ impl Interpreter {
         }
     }
 
-    fn is_truthy(&self, value: Option<LiteralType>) -> bool {
+    fn is_truthy(&self, value: &Option<LiteralType>) -> bool {
         if value.is_none() {
             return false;
         }
 
-        match value.unwrap() {
-            LiteralType::Boolean(value) => return value,
+        match value.as_ref().unwrap() {
+            LiteralType::Boolean(value) => return *value,
             _ => return true,
         }
     }
@@ -138,7 +138,7 @@ impl expression::Visitor for Interpreter {
                 return Ok(Some(LiteralType::Number(-number)));
             }
             TokenType::Bang => {
-                return Ok(Some(LiteralType::Boolean(!self.is_truthy(right))));
+                return Ok(Some(LiteralType::Boolean(!self.is_truthy(&right))));
             }
             _ => return Ok(None),
         }
@@ -194,7 +194,7 @@ impl expression::Visitor for Interpreter {
             TokenType::BangEqual => {
                 return Ok(Some(LiteralType::Boolean(left != right)));
             }
-            _ => return Ok(None),
+            _ => return Err(RuntimeError::new(&binary.operator, "Invalid operator when evaluating binary.")),
         }
     }
 
@@ -206,6 +206,29 @@ impl expression::Visitor for Interpreter {
         let value = self.evaluate(&assign.value)?;
         self.environment.as_mut().unwrap().assign(&assign.name, value.clone())?;
         return Ok(value);
+    }
+
+    fn visit_logical(&mut self, logical: &expression::Logical) -> Self::Output {
+        let left = self.evaluate(&logical.left)?;
+
+        let left_truthy = self.is_truthy(&left);
+        match logical.operator.token_type {
+            TokenType::Or => {
+                if left_truthy {
+                    return Ok(left);
+                }
+            }
+            TokenType::And => {
+                if !left_truthy {
+                    return Ok(left);
+                }
+            }
+            _ => {
+                return Err(RuntimeError::new(&logical.operator, "Invalid operator when evaluating logical."))
+            }
+        }
+
+        return self.evaluate(&logical.right);
     }
 }
 
@@ -242,7 +265,7 @@ impl statement::Visitor for Interpreter {
 
     fn visit_if(&mut self, if_statement: &statement::If) -> Self::Output {
         let value = self.evaluate(&if_statement.condition)?;
-        if self.is_truthy(value) {
+        if self.is_truthy(&value) {
             self.execute(&if_statement.then_branch)?;
         } else if if_statement.else_branch.is_some() {
             self.execute(if_statement.else_branch.as_ref().unwrap())?;

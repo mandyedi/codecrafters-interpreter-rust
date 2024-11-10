@@ -51,5 +51,9 @@ impl Visitor for AstPrinter {
     fn visit_assign(&mut self, assign: &Assign) -> Self::Output {
         return self.parenthesize(&assign.name.lexeme, &vec![&assign.value]);
     }
+
+    fn visit_logical(&mut self, logical: &Logical) -> Self::Output {
+        return self.parenthesize(&logical.operator.lexeme, &vec![&logical.left, &logical.right]);
+    }
 }
 

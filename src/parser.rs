@@ -117,7 +117,7 @@ impl Parser {
     }
 
     fn assignment(&mut self) -> Result<Expr, ParseError> {
-        let expr = self.equality()?;
+        let expr = self.or()?;
 
         if self.match_single(&TokenType::Equal) {
             let equals = self.previous().clone();
@@ -131,6 +131,30 @@ impl Parser {
             }
 
             self.error(&equals, "Invalid assignment target.".to_string());
+        }
+
+        return Ok(expr);
+    }
+
+    fn or(&mut self) -> Result<Expr, ParseError> {
+        let mut expr = self.and()?;
+        
+        while self.match_single(&TokenType::Or) {
+            let operator = self.previous().clone();
+            let right = self.and()?;
+            expr = Expr::Logical(Logical::new(expr, operator, right));
+        }
+
+        return Ok(expr);
+    }
+
+    fn and(&mut self) -> Result<Expr, ParseError> {
+        let mut expr = self.equality()?;
+        
+        while self.match_single(&TokenType::Or) {
+            let operator = self.previous().clone();
+            let right = self.equality()?;
+            expr = Expr::Logical(Logical::new(expr, operator, right));
         }
 
         return Ok(expr);
