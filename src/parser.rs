@@ -151,7 +151,7 @@ impl Parser {
     fn and(&mut self) -> Result<Expr, ParseError> {
         let mut expr = self.equality()?;
         
-        while self.match_single(&TokenType::Or) {
+        while self.match_single(&TokenType::And) {
             let operator = self.previous().clone();
             let right = self.equality()?;
             expr = Expr::Logical(Logical::new(expr, operator, right));
