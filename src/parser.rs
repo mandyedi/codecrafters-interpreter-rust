@@ -76,6 +76,10 @@ impl Parser {
             return Ok(self.while_statement()?);
         }
 
+        if self.match_single(&TokenType::For) {
+            return Ok(self.for_statement()?);
+        }
+
         return Ok(self.expression_statement()?);
     }
 
@@ -116,6 +120,51 @@ impl Parser {
         self.consume(&TokenType::RightParen, "Expect ')' after condition.")?;
         let body = self.statement()?;
         return Ok(Statement::While(While::new(condition, body)));
+    }
+
+    fn for_statement(&mut self) -> Result<Statement, ParseError> {
+        self.consume(&TokenType::LeftParen, "Expect '(' after 'for'.")?;
+
+        let mut initializer: Option<Statement> = None;
+        if self.match_single(&TokenType::Semicolon) {
+            // no initializer was declared inside
+        } else if self.match_single(&TokenType::Var) {
+            initializer = Some(self.var_declaration()?);
+        } else {
+            initializer = Some(self.expression_statement()?);
+        }
+
+        let mut condition: Option<Expr> = None;
+        if !self.check(&TokenType::Semicolon) {
+            condition = Some(self.expression()?);
+        }
+        self.consume(&TokenType::Semicolon, "Expect ';' after loop condition.")?;
+        
+        let mut increment: Option<Expr> = None;
+        if !self.check(&TokenType::RightParen) {
+            increment = Some(self.expression()?);
+        }
+        self.consume(&TokenType::RightParen, "Expect ')' after for clauses.")?;
+
+        let mut body = self.statement()?;
+
+        if increment.is_some() {
+            body = Statement::Block(Block::new(vec![
+                body,
+                Statement::Expression(Expression::new(increment.unwrap())),
+            ]));
+        }
+
+        let mut while_statement = Statement::While(While::new(
+            condition.unwrap_or(Expr::Literal(Literal::new(Some(LiteralType::Boolean(true))))),
+            body,
+        ));
+
+        if initializer.is_some() {
+            while_statement = Statement::Block(Block::new(vec![initializer.unwrap(), while_statement]));
+        }
+
+        return Ok(while_statement);
     }
 
     fn expression_statement(&mut self) -> Result<Statement, ParseError> {
