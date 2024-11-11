@@ -1,4 +1,4 @@
-use crate::{error_token, statement::{Statement, Print, Expression, Var, Block, If}, expression::*, token::*};
+use crate::{error_token, statement::{Statement, Print, Expression, Var, Block, If, While}, expression::*, token::*};
 
 pub struct ParseError {}
 
@@ -72,6 +72,10 @@ impl Parser {
             return Ok(Statement::Block(Block::new(self.block()?)));
         }
         
+        if self.match_single(&TokenType::While) {
+            return Ok(self.while_statement()?);
+        }
+
         return Ok(self.expression_statement()?);
     }
 
@@ -104,6 +108,14 @@ impl Parser {
 
         self.consume(&TokenType::RightBrace, "Expect '}' after block.")?;
         return Ok(statements);
+    }
+
+    fn while_statement(&mut self) -> Result<Statement, ParseError> {
+        self.consume(&TokenType::LeftParen, "Expect '(' after 'while'.")?;
+        let condition = self.expression()?;
+        self.consume(&TokenType::RightParen, "Expect ')' after condition.")?;
+        let body = self.statement()?;
+        return Ok(Statement::While(While::new(condition, body)));
     }
 
     fn expression_statement(&mut self) -> Result<Statement, ParseError> {

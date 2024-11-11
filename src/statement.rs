@@ -64,12 +64,27 @@ impl If {
     }
 }
 
+pub struct While {
+    pub condition: Box<Expr>,
+    pub body: Box<Statement>,
+}
+
+impl While {
+    pub fn new(condition: Expr, body: Statement) -> Self {
+        Self {
+            condition: Box::new(condition),
+            body: Box::new(body),
+        }
+    }
+}
+
 pub enum Statement {
     Print(Print),
     Expression(Expression),
     Var(Var),
     Block(Block),
     If(If),
+    While(While),
 }
 
 impl Statement {
@@ -80,6 +95,7 @@ impl Statement {
             Statement::Var(var) => visitor.visit_var(var),
             Statement::Block(block) => visitor.visit_block(block),
             Statement::If(if_statement) => visitor.visit_if(if_statement),
+            Statement::While(while_statement) => visitor.visit_while(while_statement),
         };
     }
 }
@@ -91,4 +107,5 @@ pub trait Visitor {
     fn visit_var(&mut self, var: &Var) -> Self::Output;
     fn visit_block(&mut self, block: &Block) -> Self::Output;
     fn visit_if(&mut self, if_statement: &If) -> Self::Output;
+    fn visit_while(&mut self, while_statement: &While) -> Self::Output;
 }

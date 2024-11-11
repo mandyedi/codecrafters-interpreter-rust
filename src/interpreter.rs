@@ -1,4 +1,4 @@
-use crate::{expression::{self, Variable}, runtime_error, statement, token::{LiteralType, Token, TokenType}, environment::Environment};
+use crate::{environment::Environment, expression::{self, Variable}, runtime_error, statement::{self, While}, token::{LiteralType, Token, TokenType}};
 
 #[derive(Debug)]
 pub struct RuntimeError {
@@ -269,6 +269,16 @@ impl statement::Visitor for Interpreter {
             self.execute(&if_statement.then_branch)?;
         } else if if_statement.else_branch.is_some() {
             self.execute(if_statement.else_branch.as_ref().unwrap())?;
+        }
+
+        return Ok(());
+    }
+
+    fn visit_while(&mut self, while_statement: &statement::While) -> Self::Output {
+        let mut value = self.evaluate(&while_statement.condition)?;
+        while self.is_truthy(&value) {
+            self.execute(&while_statement.body)?;
+            value = self.evaluate(&while_statement.condition)?;
         }
 
         return Ok(());
