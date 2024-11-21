@@ -1,4 +1,4 @@
-use crate::{error_token, statement::{Statement, Print, Expression, Var, Block, If, While}, expression::*, token::*};
+use crate::{error_token, statement::{Statement, Print, Expression, Var, Block, If, While, Function}, expression::*, token::*};
 
 pub struct ParseError {}
 
@@ -39,11 +39,46 @@ impl Parser {
     }
 
     fn declaration(&mut self) -> Result<Statement, ParseError> {
+        if self.match_single(&TokenType::Fun) {
+            return self.function("function".to_owned());
+        }
+
         if self.match_single(&TokenType::Var) {
             return Ok(self.var_declaration()?);
         }
 
         return Ok(self.statement()?);
+    }
+
+    fn function(&mut self, kind: String) -> Result<Statement, ParseError> {
+        let name = self.consume(&TokenType::Identifier, &format!("Expect {kind} name."))?.clone();
+        
+        self.consume(&TokenType::LeftParen,&format!("Expect '(' after {kind} name."))?;
+
+        let mut parameters = Vec::new();
+        if !self.check(&TokenType::RightParen) {
+            loop {
+                if parameters.len() >= 255 {
+                    self.error(self.peek(), "Can't have more than 255 parameters.".to_string());
+                }
+
+                parameters.push(
+                    self.consume(&TokenType::Identifier, "Expect parameter name.")?
+                        .clone(),
+                );
+
+                if !self.match_single(&TokenType::Comma) {
+                    break;
+                }
+            }
+        }
+
+        self.consume(&TokenType::RightParen, "Expect ')' after parameters.")?;
+        self.consume(&TokenType::LeftBrace, &format!("Expect '{{' before {kind} body."))?;
+        
+        let body = self.block()?;
+
+        return Ok(Statement::Function(Function::new(name, parameters, body)));
     }
 
     fn var_declaration(&mut self) -> Result<Statement, ParseError> {
