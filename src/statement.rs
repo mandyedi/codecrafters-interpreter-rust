@@ -98,6 +98,20 @@ impl Function {
 }
 
 #[derive(Clone, PartialEq, Debug)]
+pub struct Return {
+    pub keyword: Token,
+    pub value: Option<Expr>,
+}
+impl Return {
+    pub fn new(keyword: Token, value: Option<Expr>) -> Self {
+        Self {
+            keyword,
+            value: value,
+        }
+    }
+}
+
+#[derive(Clone, PartialEq, Debug)]
 pub enum Statement {
     Print(Print),
     Expression(Expression),
@@ -106,6 +120,7 @@ pub enum Statement {
     If(If),
     While(While),
     Function(Function),
+    Return(Return),
 }
 
 impl Statement {
@@ -118,6 +133,7 @@ impl Statement {
             Statement::If(if_statement) => visitor.visit_if(if_statement),
             Statement::While(while_statement) => visitor.visit_while(while_statement),
             Statement::Function(function_statement) => visitor.visit_function(function_statement),
+            Statement::Return(return_statement) => visitor.visit_return(return_statement),
         };
     }
 }
@@ -131,4 +147,5 @@ pub trait Visitor {
     fn visit_if(&mut self, if_statement: &If) -> Self::Output;
     fn visit_while(&mut self, while_statement: &While) -> Self::Output;
     fn visit_function(&mut self, function_statement: &Function) -> Self::Output;
+    fn visit_return(&mut self, return_statement: &Return) -> Self::Output;
 }

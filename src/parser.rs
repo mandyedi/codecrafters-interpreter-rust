@@ -1,4 +1,4 @@
-use crate::{error_token, statement::{Statement, Print, Expression, Var, Block, If, While, Function}, expression::*, token::*};
+use crate::{error_token, statement::{Statement, Print, Expression, Var, Block, If, While, Function, Return}, expression::*, token::*};
 
 pub struct ParseError {}
 
@@ -115,6 +115,10 @@ impl Parser {
             return Ok(self.for_statement()?);
         }
 
+        if self.match_single(&TokenType::Return) {
+            return Ok(self.return_statement()?);
+        }
+
         return Ok(self.expression_statement()?);
     }
 
@@ -200,6 +204,16 @@ impl Parser {
         }
 
         return Ok(while_statement);
+    }
+
+    fn return_statement(&mut self) -> Result<Statement, ParseError> {
+        let keyword = self.previous().clone();
+        let mut value = None;
+        if !self.check(&TokenType::Semicolon) {
+            value = Some(self.expression()?);
+        }
+        self.consume(&TokenType::Semicolon, "Expect ';' after return value.")?;
+        return Ok(Statement::Return(Return::new(keyword, value)));
     }
 
     fn expression_statement(&mut self) -> Result<Statement, ParseError> {

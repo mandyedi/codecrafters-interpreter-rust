@@ -355,4 +355,13 @@ impl statement::Visitor for Interpreter {
         self.environment.define(function.name.lexeme.clone(), value);
         return Ok(());
     }
+
+    fn visit_return(&mut self, r#return: &statement::Return) -> Self::Output {
+        let mut value = None;
+        if r#return.value.is_some() {
+            value = self.evaluate(r#return.value.as_ref().unwrap())?;
+        }
+
+        return Err(RuntimeException::Return(Return::new(value)));
+    }
 }
