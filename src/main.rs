@@ -6,6 +6,7 @@ mod ast_printer;
 mod interpreter;
 mod statement;
 mod environment;
+mod lox_callable;
 
 use std::env;
 use std::fs;

@@ -1,45 +1,48 @@
-use std::collections::HashMap;
-use crate::{interpreter::RuntimeError, token::{LiteralType, Token}};
+use std::{collections::HashMap, cell::RefCell, rc::Rc};
+use crate::{interpreter::{RuntimeException, RuntimeError}, token::{LiteralType, Token}};
 
+#[derive(Debug, PartialEq)]
 pub struct Environment {
-    values: HashMap<String, Option<LiteralType>>,
-    pub enclosing: Option<Box<Environment>>,
+    values: RefCell<HashMap<String, Option<LiteralType>>>,
+    pub enclosing: Option<Rc<Environment>>,
 }
 
 impl Environment {
-    pub fn new(enclosing: Option<Environment>) -> Self {
+    pub fn new(enclosing: Option<&Rc<Environment>>) -> Self {
         Self {
-            values: HashMap::new(),
-            enclosing: enclosing.map(|e| Box::new(e)),
+            values: RefCell::new(HashMap::new()),
+            enclosing: enclosing.map(|e| Rc::clone(e)),
         }
     }
 
-    pub fn define(&mut self, name: String, value: Option<LiteralType>) {
-        self.values.insert(name, value);
+    pub fn define(&self, name: String, value: Option<LiteralType>) {
+        self.values.borrow_mut().insert(name, value);
     }
 
-    pub fn assign(&mut self, name: &Token, value: Option<LiteralType>) -> Result<(), RuntimeError> {
-        if self.values.contains_key(&name.lexeme) {
-            self.values.insert(name.lexeme.clone(), value);
+    pub fn assign(&self, name: &Token, value: Option<LiteralType>) -> Result<(), RuntimeException> {
+        let mut value_ref = self.values.borrow_mut();
+        if value_ref.contains_key(&name.lexeme) {
+            value_ref.insert(name.lexeme.clone(), value);
             return Ok(());
         }
 
         if self.enclosing.is_some() {
-            return self.enclosing.as_mut().unwrap().assign(name, value);
+            return self.enclosing.as_ref().unwrap().assign(name, value);
         }
 
-        return Err(RuntimeError::new(name, format!("Undefined variable '{}'.", name.lexeme).as_str()));
+        return Err(RuntimeException::RuntimeError(RuntimeError::new(name, format!("Undefined variable '{}'.", name.lexeme).as_str())));
     }
 
-    pub fn get(&self, name: &Token) -> Result<&Option<LiteralType>, RuntimeError> {
-        if self.values.contains_key(&name.lexeme) {
-            return Ok(self.values.get(&name.lexeme).unwrap());
+    pub fn get(&self, name: &Token) -> Result<Option<LiteralType>, RuntimeException> {
+        let value_ref = self.values.borrow();
+        if value_ref.contains_key(&name.lexeme) {
+            return Ok(value_ref.get(&name.lexeme).unwrap().clone());
         }
 
         if self.enclosing.is_some() {
             return self.enclosing.as_ref().unwrap().get(name);
         }
         
-        return Err(RuntimeError::new(name, format!("Undefined variable '{}'", name.lexeme).as_str()));
+        return Err(RuntimeException::RuntimeError(RuntimeError::new(name, format!("Undefined variable '{}'", name.lexeme).as_str())));
     }
 }

@@ -1,5 +1,6 @@
 use crate::token::{LiteralType, Token};
 
+#[derive(Clone, PartialEq, Debug)]
 pub struct Literal {
     pub value: Option<LiteralType>,
 }
@@ -12,6 +13,7 @@ impl Literal {
     }
 }
 
+#[derive(Clone, PartialEq, Debug)]
 pub struct Grouping {
     pub expression: Box<Expr>,
 }
@@ -24,6 +26,7 @@ impl Grouping {
     }
 }
 
+#[derive(Clone, PartialEq, Debug)]
 pub struct Unary {
     pub operator: Token,
     pub right: Box<Expr>,
@@ -38,6 +41,7 @@ impl Unary {
     }
 }
 
+#[derive(Clone, PartialEq, Debug)]
 pub struct Binary {
     pub left: Box<Expr>,
     pub operator: Token,
@@ -54,6 +58,7 @@ impl Binary {
     }
 }
 
+#[derive(Clone, PartialEq, Debug)]
 pub struct Variable {
     pub name: Token,
 }
@@ -64,6 +69,7 @@ impl Variable {
     }
 }
 
+#[derive(Clone, PartialEq, Debug)]
 pub struct Assign {
     pub name: Token,
     pub value: Box<Expr>,
@@ -78,6 +84,7 @@ impl Assign {
     }
 }
 
+#[derive(Clone, PartialEq, Debug)]
 pub struct Logical {
     pub left: Box<Expr>,
     pub operator: Token,
@@ -94,6 +101,24 @@ impl Logical {
     }
 }
 
+#[derive(Clone, PartialEq, Debug)]
+pub struct Call {
+    pub callee: Box<Expr>,
+    pub paren: Token,
+    pub arguments: Vec<Expr>,
+}
+
+impl Call {
+    pub fn new(callee: Expr, paren: Token, arguments: Vec<Expr>) -> Self {
+        Self {
+            callee: Box::new(callee),
+            paren,
+            arguments,
+        }
+    }
+}
+
+#[derive(Clone, PartialEq, Debug)]
 pub enum Expr {
     Literal(Literal),
     Grouping(Grouping),
@@ -102,6 +127,7 @@ pub enum Expr {
     Variable(Variable),
     Assign(Assign),
     Logical(Logical),
+    Call(Call),
 }
 
 impl Expr {
@@ -114,6 +140,7 @@ impl Expr {
             Expr::Variable(variable) => visitor.visit_variable(variable),
             Expr::Assign(assign) => visitor.visit_assign(assign),
             Expr::Logical(logical) => visitor.visit_logical(logical),
+            Expr::Call(call) => visitor.visit_call(call),
         };
     }
 }
@@ -127,4 +154,5 @@ pub trait Visitor {
     fn visit_variable(&mut self, variable: &Variable) -> Self::Output;
     fn visit_assign(&mut self, assign: &Assign) -> Self::Output;
     fn visit_logical(&mut self, logical: &Logical) -> Self::Output;
+    fn visit_call(&mut self, call: &Call) -> Self::Output;
 }

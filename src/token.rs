@@ -1,4 +1,5 @@
 use std::fmt::{self, Display};
+use crate::lox_callable::LoxCallables;
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum TokenType {
@@ -80,6 +81,7 @@ pub enum LiteralType {
     String(String),
     Number(f64),
     Boolean(bool),
+    LoxCallable(LoxCallables),
 }
 
 impl Display for LiteralType {
@@ -88,11 +90,12 @@ impl Display for LiteralType {
             LiteralType::String(s) => write!(f, "{}", s),
             LiteralType::Number(n) => write!(f, "{:?}", n),
             LiteralType::Boolean(b) => write!(f, "{}", b),
+            LiteralType::LoxCallable(c) => write!(f, "{}", c),
         }
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct Token {
     pub token_type: TokenType,
     pub lexeme: String,
@@ -139,6 +142,7 @@ impl Display for Token {
                 Some(LiteralType::String(literal)) => format!("{}", literal),
                 Some(LiteralType::Number(literal)) => format!("{:?}", literal),
                 Some(LiteralType::Boolean(literal)) => format!("{}", literal),
+                Some(LiteralType::LoxCallable(literal)) => format!("{}", literal),
                 None => "null".to_owned(),
             }
         )

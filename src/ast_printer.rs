@@ -55,5 +55,9 @@ impl Visitor for AstPrinter {
     fn visit_logical(&mut self, logical: &Logical) -> Self::Output {
         return self.parenthesize(&logical.operator.lexeme, &vec![&logical.left, &logical.right]);
     }
+
+    fn visit_call(&mut self, call: &Call) -> Self::Output {
+        return self.parenthesize(&"function".to_owned(), &call.arguments.iter().collect());
+    }
 }
 
